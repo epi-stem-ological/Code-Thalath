@@ -1,0 +1,66 @@
+<%- include('partials/header') %>
+
+<% if (!q) { %>
+  <div class="module"><h2>Search</h2><div class="body">Type something in the box up top.</div></div>
+<% } else { %>
+
+  <div class="module">
+    <div class="modhead">People (<%= people.length %>)</div>
+    <div class="body">
+      <% if (!people.length) { %><div class="empty">Nobody matched "<%= q %>".</div><% } %>
+      <div class="people">
+        <% people.forEach(function (f) { %>
+          <div class="p">
+            <a href="/u/<%= f.username %>"><img src="<%= u.avatarUrl(f) %>" alt=""></a>
+            <a href="/u/<%= f.username %>"><%= f.display_name %></a>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+
+  <% if (blogs.length) { %>
+  <div class="module blue">
+    <div class="modhead">Blogs (<%= blogs.length %>)</div>
+    <div class="body tight">
+      <table class="grid">
+        <% blogs.forEach(function (b) { %>
+          <tr><td><a href="/blog/entry/<%= b.id %>" class="btext"><%= b.title %></a>
+            <div class="dim">by <a href="/u/<%= b.username %>"><%= b.display_name %></a> &middot; <%= u.fmtDate(b.created_at) %></div></td></tr>
+        <% }); %>
+      </table>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (bulletins.length) { %>
+  <div class="module blue">
+    <div class="modhead">Bulletins (<%= bulletins.length %>)</div>
+    <div class="body tight">
+      <table class="grid">
+        <% bulletins.forEach(function (b) { %>
+          <tr><td><a href="/bulletins/<%= b.id %>" class="btext"><%= b.subject %></a>
+            <div class="dim">by <a href="/u/<%= b.username %>"><%= b.display_name %></a> &middot; <%= u.fmtDate(b.created_at) %></div></td></tr>
+        <% }); %>
+      </table>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (groups.length) { %>
+  <div class="module blue">
+    <div class="modhead">Groups (<%= groups.length %>)</div>
+    <div class="body tight">
+      <table class="grid">
+        <% groups.forEach(function (g) { %>
+          <tr><td><a href="/groups/<%= g.slug %>" class="btext"><%= g.name %></a>
+            <div class="dim"><%= g.description %></div></td></tr>
+        <% }); %>
+      </table>
+    </div>
+  </div>
+  <% } %>
+
+<% } %>
+
+<%- include('partials/footer') %>

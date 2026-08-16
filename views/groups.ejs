@@ -1,0 +1,31 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead"><span>Groups</span><a href="/groups/new">Create a group &raquo;</a></div>
+  <div class="body tight">
+    <% if (!rows.length) { %><div class="empty">No groups yet. <a href="/groups/new">Start one.</a></div><% } %>
+    <table class="grid">
+      <% rows.forEach(function (g) { %>
+        <tr>
+          <td style="width:44px">
+            <% if (g.icon) { %><img class="thumb sm" src="/uploads/<%= g.icon %>" alt="">
+            <% } else { %><div class="thumb sm center" style="line-height:38px;font-size:18px">👥</div><% } %>
+          </td>
+          <td>
+            <a href="/groups/<%= g.slug %>" class="btext"><%= g.name %></a>
+            <% if (g.privacy === 'private') { %><span class="pill">🔒 private</span><% } %>
+            <% if (mine.has(g.id)) { %><span class="pill">member</span><% } %>
+            <div class="dim"><%= g.description %></div>
+          </td>
+          <td class="right dim nowrap">
+            <%= g.members %> members<br>
+            <%= g.topics %> topics<br>
+            <%= g.last_at ? u.timeAgo(g.last_at) : 'quiet' %>
+          </td>
+        </tr>
+      <% }); %>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

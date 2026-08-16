@@ -1,0 +1,169 @@
+<%- include('partials/header') %>
+
+<div class="im-wrap">
+
+  <div class="im-list">
+    <div style="background:#eef3fa;padding:5px;border-bottom:1px solid #6699cc">
+      <details>
+        <summary class="btext" style="cursor:pointer">＋ New chat</summary>
+        <form method="post" action="/im/new" style="margin-top:5px">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <input type="text" name="name" placeholder="Group name (optional)" style="width:100%;margin-bottom:4px">
+          <div style="max-height:150px;overflow:auto;border:1px solid #ccd;background:#fff;padding:3px">
+            <% friends.forEach(function (f) { %>
+              <label class="inline" style="display:block">
+                <input type="checkbox" name="members" value="<%= f.id %>"> <%= f.display_name %>
+              </label>
+            <% }); %>
+            <% if (!friends.length) { %><span class="dim">Add some friends first.</span><% } %>
+          </div>
+          <button class="btn small primary mt6">Start</button>
+        </form>
+      </details>
+    </div>
+    <% if (!threads.length) { %><div class="empty">No conversations yet.</div><% } %>
+    <% threads.forEach(function (t) { %>
+      <a href="/im/t/<%= t.id %>" class="<%= thread && t.id === thread.id ? 'on' : '' %>">
+        <% if (t.unread) { %><span class="unread"><%= t.unread %></span><% } %>
+        <span class="nm"><%= t.label %></span>
+        <div class="pv"><%= t.preview ? t.preview.slice(0, 44) : 'no messages yet' %></div>
+        <div class="pv dim"><%= t.last_at ? u.timeAgo(t.last_at) : '' %></div>
+      </a>
+    <% }); %>
+  </div>
+
+  <div class="im-main">
+    <% if (!thread) { %>
+      <div class="empty" style="margin:auto">
+        Pick a conversation, or start one.<br><br>
+        <span class="dim">Tip: the IM link on anyone's profile opens a chat with them.</span>
+      </div>
+    <% } else { %>
+      <div class="im-head">
+        <span><%= thread.label || thread.name || 'Chat' %></span>
+        <span>
+          <% if (thread.others && thread.others.length === 1) { %>
+            <a href="/u/<%= thread.others[0].username %>">profile</a> &middot;
+          <% } %>
+          <form method="post" action="/im/t/<%= thread.id %>/leave" style="display:inline" data-confirm="Leave this conversation?">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="btn small">leave</button>
+          </form>
+        </span>
+      </div>
+
+      <div class="im-log" id="im-log">
+        <div class="im-sys">Conversation started</div>
+        <% messages.forEach(function (m) { %>
+          <div class="im-msg <%= m.author_id === me.id ? 'mine' : '' %>">
+            <span class="who"><%= m.display_name %>:</span>
+            <span class="txt"><%= m.body %></span>
+            <span class="ts"><%= u.fmtDateTime(m.created_at) %></span>
+          </div>
+        <% }); %>
+      </div>
+
+      <form class="im-form" id="im-form" method="post" action="/im/t/<%= thread.id %>/send">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <textarea name="body" id="im-body" placeholder="Type a message&hellip; (Enter sends)" autocomplete="off"></textarea>
+        <button class="btn primary">Send</button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<% if (thread) { %>
+<script>
+(function () {
+  var threadId = <%= thread.id %>;
+  var meId = <%= me.id %>;
+  var log = document.getElementById('im-log');
+  var form = document.getElementById('im-form');
+  var input = document.getElementById('im-body');
+  var lastId = <%= messages.length ? messages[messages.length - 1].id : 0 %>;
+  var csrf = '<%= csrf %>';
+
+  function atBottom() { return log.scrollHeight - log.scrollTop - log.clientHeight < 60; }
+  function toBottom() { log.scrollTop = log.scrollHeight; }
+  toBottom();
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function stamp(ts) {
+    var d = new Date(ts), h = d.getHours(), ap = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + ap;
+  }
+
+  function append(m) {
+    if (m.id <= lastId) return;
+    lastId = m.id;
+    var stick = atBottom();
+    var div = document.createElement('div');
+    div.className = 'im-msg' + (m.author_id === meId ? ' mine' : '');
+    div.innerHTML = '<span class="who">' + esc(m.display_name) + ':</span> ' +
+      '<span class="txt">' + esc(m.body) + '</span>' +
+      '<span class="ts">' + stamp(m.created_at) + '</span>';
+    log.appendChild(div);
+    if (stick) toBottom();
+  }
+
+  // live stream, with polling as the fallback
+  var es = null;
+  var poll = null;
+
+  function startPolling() {
+    if (poll) return;
+    poll = setInterval(function () {
+      fetch('/im/t/' + threadId + '/messages?after=' + lastId)
+        .then(function (r) { return r.json(); })
+        .then(function (d) { (d.messages || []).forEach(append); })
+        .catch(function () {});
+    }, 4000);
+  }
+
+  if (window.EventSource) {
+    es = new EventSource('/im/t/' + threadId + '/stream');
+    es.onmessage = function (e) {
+      try { append(JSON.parse(e.data)); } catch (err) {}
+    };
+    es.onerror = function () { startPolling(); };
+  } else {
+    startPolling();
+  }
+
+  // catch anything missed while the tab was hidden
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') return;
+    fetch('/im/t/' + threadId + '/messages?after=' + lastId)
+      .then(function (r) { return r.json(); })
+      .then(function (d) { (d.messages || []).forEach(append); })
+      .catch(function () {});
+  });
+
+  function send() {
+    var text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    fetch('/im/t/' + threadId + '/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'x-requested-with': 'fetch', 'x-csrf-token': csrf },
+      body: new URLSearchParams({ body: text, _csrf: csrf }),
+    }).then(function (r) { return r.json(); })
+      .then(function (d) { if (d.message) append(d.message); toBottom(); })
+      .catch(function () { input.value = text; alert('Message did not send. Check your connection.'); });
+  }
+
+  form.addEventListener('submit', function (e) { e.preventDefault(); send(); });
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+})();
+</script>
+<% } %>
+
+<%- include('partials/footer') %>

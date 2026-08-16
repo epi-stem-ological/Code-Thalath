@@ -1,0 +1,65 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">
+    <span><% if (t.pinned) { %>📌 <% } %><% if (t.locked) { %>🔒 <% } %><%= t.title %></span>
+    <a href="/groups/<%= g.slug %>">&laquo; <%= g.name %></a>
+  </div>
+  <div class="body tight">
+    <% posts.forEach(function (p, i) { %>
+      <div class="row" style="padding:8px;margin:0">
+        <div style="width:96px;flex:0 0 96px;text-align:center">
+          <a href="/u/<%= p.username %>"><img class="thumb" src="<%= u.avatarUrl(p) %>" alt="" style="margin:0 auto"></a>
+          <a href="/u/<%= p.username %>" class="btext"><%= p.display_name %></a>
+          <% if (u.isOnline(p)) { %><div class="online">● online</div><% } %>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div class="dim">#<%= i + 1 %> &middot; <%= u.fmtDateTime(p.created_at) %></div>
+          <div class="ugc"><%- p.body %></div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</div>
+
+<a id="bottom"></a>
+<% if (member && (!t.locked || me.is_admin)) { %>
+<div class="module blue">
+  <div class="modhead">Reply</div>
+  <div class="body">
+    <form method="post" action="/groups/<%= g.slug %>/t/<%= t.id %>/reply">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <textarea name="body" rows="6" required></textarea>
+      <button class="btn primary mt6">Post Reply</button>
+    </form>
+  </div>
+</div>
+<% } else if (t.locked) { %>
+  <div class="ms-flash">This topic is locked.</div>
+<% } else { %>
+  <div class="ms-flash">Join the group to reply.</div>
+<% } %>
+
+<% if (g.owner_id === me.id || me.is_admin || t.author_id === me.id) { %>
+<div class="module">
+  <div class="modhead">Moderation</div>
+  <div class="body" style="display:flex;gap:5px;flex-wrap:wrap">
+    <% if (g.owner_id === me.id || me.is_admin) { %>
+      <form method="post" action="/groups/<%= g.slug %>/t/<%= t.id %>/pin">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="btn small"><%= t.pinned ? 'Unpin' : 'Pin' %></button>
+      </form>
+      <form method="post" action="/groups/<%= g.slug %>/t/<%= t.id %>/lock">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="btn small"><%= t.locked ? 'Unlock' : 'Lock' %></button>
+      </form>
+    <% } %>
+    <form method="post" action="/groups/<%= g.slug %>/t/<%= t.id %>/delete" data-confirm="Delete this whole topic?">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="btn small danger">Delete topic</button>
+    </form>
+  </div>
+</div>
+<% } %>
+
+<%- include('partials/footer') %>

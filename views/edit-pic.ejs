@@ -1,0 +1,53 @@
+<%- include('partials/header') %>
+<%- include('partials/tabs') %>
+
+<div class="ms-cols">
+  <div class="ms-col-left">
+    <div class="module">
+      <div class="modhead">Current Default Pic</div>
+      <div class="body center">
+        <img class="thumb lg" src="<%= u.avatarUrl(me) %>" alt="" style="margin:0 auto">
+        <% if (me.avatar) { %>
+        <form method="post" action="/edit/pic/remove" class="mt6" data-confirm="Remove your profile picture?">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <button class="btn small danger">Remove picture</button>
+        </form>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="ms-col-right">
+    <div class="module">
+      <div class="modhead">Upload a New One</div>
+      <div class="body">
+        <form method="post" action="/edit/pic" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <input type="file" name="avatar" accept="image/*" required>
+          <div class="hint">JPG, PNG, GIF (animated is fine), WebP. Max 12&nbsp;MB.</div>
+          <button type="submit" class="btn primary mt6">Upload &amp; Set as Default</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="modhead"><span>My Pictures (<%= photos.length %>)</span><a href="/photos/<%= me.username %>">Manage &raquo;</a></div>
+      <div class="body">
+        <% if (!photos.length) { %><div class="empty">No pictures yet.</div><% } %>
+        <div class="photogrid">
+          <% photos.forEach(function (p) { %>
+            <div>
+              <img src="/uploads/<%= p.file %>" alt="<%= p.caption %>">
+              <form method="post" action="/edit/pic/use/<%= p.id %>">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <button class="btn small" style="width:100%"><%= me.avatar === p.file ? '★ default' : 'set default' %></button>
+              </form>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

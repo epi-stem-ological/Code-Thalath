@@ -1,0 +1,12 @@
+<% const pages = Math.ceil(total / per); if (pages > 1) { %>
+<div class="pager">
+  <% const base = typeof baseUrl !== 'undefined' ? baseUrl : path;
+     const sep = base.includes('?') ? '&' : '?'; %>
+  <% if (page > 1) { %><a href="<%= base + sep %>p=<%= page - 1 %>">&laquo; Prev</a><% } %>
+  <% for (let i = Math.max(1, page - 4); i <= Math.min(pages, page + 4); i++) { %>
+    <% if (i === page) { %><span class="cur"><%= i %></span>
+    <% } else { %><a href="<%= base + sep %>p=<%= i %>"><%= i %></a><% } %>
+  <% } %>
+  <% if (page < pages) { %><a href="<%= base + sep %>p=<%= page + 1 %>">Next &raquo;</a><% } %>
+</div>
+<% } %>

@@ -1,0 +1,78 @@
+<%- include('partials/header') %>
+
+<% if (requests.length) { %>
+<div class="module">
+  <div class="modhead">Friend Requests (<%= requests.length %>)</div>
+  <div class="body">
+    <% requests.forEach(function (r) { %>
+      <div class="row">
+        <a href="/u/<%= r.username %>"><img class="thumb" src="<%= u.avatarUrl(r) %>" alt=""></a>
+        <div style="flex:1">
+          <a href="/u/<%= r.username %>" class="nametext"><%= r.display_name %></a>
+          <div class="dim"><%= r.headline ? r.headline.replace(/<[^>]*>/g, '') : '' %></div>
+          <div class="dim">asked <%= u.timeAgo(r.asked_at) %></div>
+          <div class="mt6">
+            <form method="post" action="/friends/accept/<%= r.username %>" style="display:inline">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button class="btn small primary">Accept</button>
+            </form>
+            <form method="post" action="/friends/deny/<%= r.username %>" style="display:inline">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button class="btn small">Deny</button>
+            </form>
+            <form method="post" action="/friends/block/<%= r.username %>" style="display:inline" data-confirm="Block this person?">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button class="btn small danger">Block</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</div>
+<% } %>
+
+<% if (sent.length) { %>
+<div class="module blue">
+  <div class="modhead">Requests You Sent (<%= sent.length %>)</div>
+  <div class="body">
+    <div class="people">
+      <% sent.forEach(function (f) { %>
+        <div class="p">
+          <a href="/u/<%= f.username %>"><img src="<%= u.avatarUrl(f) %>" alt=""></a>
+          <a href="/u/<%= f.username %>"><%= f.display_name %></a>
+          <div class="dim">pending</div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<div class="module">
+  <div class="modhead"><span>My Friends (<%= friends.length %>)</span><a href="/edit/top">Edit my Top &raquo;</a></div>
+  <div class="body">
+    <% if (!friends.length) { %>
+      <div class="empty">No friends yet. <a href="/browse">Go find some.</a></div>
+    <% } %>
+    <div class="people">
+      <% friends.forEach(function (f) { %>
+        <div class="p">
+          <a href="/u/<%= f.username %>"><img src="<%= u.avatarUrl(f) %>" alt=""></a>
+          <a href="/u/<%= f.username %>"><%= f.display_name %></a>
+          <% if (u.isOnline(f)) { %><div class="online">● online</div><% } else { %><div class="offline"><%= u.timeAgo(f.last_seen) %></div><% } %>
+          <div style="margin-top:2px">
+            <a class="btn small" href="/im/with/<%= f.username %>">IM</a>
+            <a class="btn small" href="/mail/compose?to=<%= f.username %>">Mail</a>
+          </div>
+          <form method="post" action="/friends/remove/<%= f.username %>" data-confirm="Remove <%= f.display_name %> from your friends?" style="margin-top:2px">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="btn small danger">remove</button>
+          </form>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

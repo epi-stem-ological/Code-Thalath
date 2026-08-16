@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">
+    <span>
+      Bulletin Board &mdash;
+      <a href="/bulletins" style="<%= !all ? 'font-weight:bold' : '' %>">my friends</a> |
+      <a href="/bulletins?all=1" style="<%= all ? 'font-weight:bold' : '' %>">everyone</a>
+    </span>
+    <a href="/bulletins/compose">Post Bulletin &raquo;</a>
+  </div>
+  <div class="body tight">
+    <% if (!rows.length) { %><div class="empty">The board is empty. <a href="/bulletins/compose">Say something.</a></div><% } %>
+    <table class="grid">
+      <% rows.forEach(function (b) { %>
+        <tr>
+          <td style="width:44px"><a href="/u/<%= b.username %>"><img class="thumb sm" src="<%= u.avatarUrl(b) %>" alt=""></a></td>
+          <td>
+            <a href="/bulletins/<%= b.id %>" class="btext"><%= b.subject %></a><br>
+            <span class="dim">from <a href="/u/<%= b.username %>"><%= b.display_name %></a> &middot; <%= u.timeAgo(b.created_at) %></span>
+          </td>
+          <% if (b.author_id === me.id || me.is_admin) { %>
+          <td class="right">
+            <form method="post" action="/bulletins/<%= b.id %>/delete" data-confirm="Delete this bulletin?">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button class="btn small danger">✕</button>
+            </form>
+          </td>
+          <% } else { %><td></td><% } %>
+        </tr>
+      <% }); %>
+    </table>
+  </div>
+  <%- include('partials/pager', { baseUrl: all ? '/bulletins?all=1' : '/bulletins' }) %>
+</div>
+
+<%- include('partials/footer') %>

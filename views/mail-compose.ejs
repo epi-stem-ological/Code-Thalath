@@ -1,0 +1,40 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">Send a Message</div>
+  <div class="body">
+    <form method="post" action="/mail/send">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="field">
+        <label for="to">To</label>
+        <input list="people" type="text" id="to" name="to" value="<%= to ? to.username : '' %>"
+               placeholder="username" required style="width:100%" autocapitalize="none">
+        <datalist id="people">
+          <% everyone.forEach(function (p) { %>
+            <option value="<%= p.username %>"><%= p.display_name %></option>
+          <% }); %>
+        </datalist>
+        <% if (friends.length) { %>
+          <div class="hint" style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">
+            <% friends.slice(0, 20).forEach(function (f) { %>
+              <button type="button" class="btn small" onclick="document.getElementById('to').value='<%= f.username %>'"><%= f.display_name %></button>
+            <% }); %>
+          </div>
+        <% } %>
+      </div>
+      <div class="field">
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" name="subject" value="<%= subject %>" style="width:100%">
+      </div>
+      <div class="field">
+        <label for="body">Message</label>
+        <textarea id="body" name="body" rows="12" required><%= body %></textarea>
+        <div class="hint">HTML allowed.</div>
+      </div>
+      <button class="btn primary">Send</button>
+      <a class="btn" href="/mail">Cancel</a>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead"><span><%= m.subject %></span><a href="/mail">&laquo; Inbox</a></div>
+  <div class="body">
+    <div class="row" style="border:0;padding:0">
+      <a href="/u/<%= m.s_username %>"><img class="thumb" src="<%= u.avatarUrl({ avatar: m.s_avatar }) %>" alt=""></a>
+      <div style="flex:1">
+        <div>From: <a href="/u/<%= m.s_username %>" class="btext"><%= m.s_name %></a></div>
+        <div>To: <a href="/u/<%= m.r_username %>"><%= m.r_name %></a></div>
+        <div class="dim"><%= u.fmtDateTime(m.created_at) %></div>
+      </div>
+    </div>
+    <hr>
+    <div class="ugc"><%- m.body %></div>
+  </div>
+  <div class="body" style="border-top:1px solid #ccc">
+    <% if (m.sender_id !== me.id) { %>
+      <a class="btn primary" href="/mail/compose?to=<%= m.s_username %>&amp;re=<%= m.id %>">Reply</a>
+    <% } %>
+    <a class="btn" href="/im/with/<%= m.sender_id === me.id ? m.r_username : m.s_username %>">Switch to IM</a>
+    <form method="post" action="/mail/<%= m.id %>/unread" style="display:inline">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="btn small">Mark unread</button>
+    </form>
+    <form method="post" action="/mail/<%= m.id %>/delete" style="display:inline" data-confirm="Delete this message?">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="btn small danger">Delete</button>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,61 @@
+<%- include('partials/header') %>
+
+<div class="ms-cols">
+  <div class="ms-col-right">
+    <div class="module">
+      <h2><%= siteName %> &mdash; <%= tagline %></h2>
+      <div class="body">
+        <p style="font-size:13px">
+          A private space for our people. No algorithm, no ads, no strangers.
+          Profiles, songs, wallpapers, Top&nbsp;8s, bulletins, blogs, mail and IM &mdash;
+          the whole 2005 kit, on your phone.
+        </p>
+        <p>
+          <a class="btn primary" href="/login">Log In</a>
+          <a class="btn" href="/register">I have an invite code</a>
+          <button class="btn" id="install-btn" style="display:none">Install the app</button>
+        </p>
+        <p class="dim">
+          Membership is invite only. If you don't have a code, ask Tom.
+        </p>
+      </div>
+    </div>
+
+    <div class="module blue">
+      <div class="modhead">What's in here</div>
+      <div class="body">
+        <table class="grid">
+          <tr><td style="width:150px"><b>Your profile</b></td><td>Blurbs, interests, details, photos, mood &mdash; and a song that plays when someone visits.</td></tr>
+          <tr><td><b>Layouts</b></td><td>Wallpaper, colours, fonts, cursors and a raw CSS box. Break it however you like; the site chrome survives.</td></tr>
+          <tr><td><b>Top 8</b></td><td>Or Top 3. Or Top 24. Set the number and the column count yourself.</td></tr>
+          <tr><td><b>Comments</b></td><td>On profiles and blogs, with HTML, like it's supposed to be.</td></tr>
+          <tr><td><b>Bulletins</b></td><td>Broadcast to your friends. Surveys included.</td></tr>
+          <tr><td><b>Mail &amp; IM</b></td><td>Private messages for long things, live chat for fast things. Push notifications on your phone.</td></tr>
+          <tr><td><b>Groups</b></td><td>Forums with topics and replies, for the arguments.</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="ms-col-left">
+    <div class="module">
+      <div class="modhead">Members</div>
+      <div class="body center">
+        <div class="stat-strip" style="justify-content:center">
+          <div class="s"><b><%= stats.users %></b>people</div>
+          <div class="s"><b><%= stats.online %></b>online now</div>
+        </div>
+      </div>
+    </div>
+    <div class="module">
+      <div class="modhead">Add to your phone</div>
+      <div class="body">
+        <p><b>iPhone:</b> open in Safari &rarr; Share &rarr; <i>Add to Home Screen</i>.</p>
+        <p><b>Android:</b> Chrome menu &rarr; <i>Install app</i>.</p>
+        <p class="dim">Once installed it runs full screen and can send you notifications.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,198 @@
+<%- include('partials/header') %>
+<%- include('partials/tabs') %>
+
+<form method="post" action="/edit/design" enctype="multipart/form-data" data-live-css="1">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+
+  <fieldset>
+    <legend>Pick a Look</legend>
+    <label class="inline" style="display:block;margin-bottom:6px">
+      <input type="checkbox" name="apply_theme" value="1">
+      <b>Apply this theme's colours and font when I save</b>
+      <span class="hint" style="display:inline">&mdash; leave unticked to keep the colours you set below</span>
+    </label>
+    <div class="swatchrow">
+      <% Object.keys(THEMES).forEach(function (key) { const t = THEMES[key]; %>
+        <div class="themecard <%= layout.theme === key ? 'sel' : '' %>">
+          <div class="sw" style="background:<%= t.bg_color %>;position:relative">
+            <div style="position:absolute;left:6px;right:6px;top:6px;height:8px;background:<%= t.header_bg %>"></div>
+            <div style="position:absolute;left:6px;right:6px;top:16px;bottom:5px;background:<%= t.table_bg %>;border:1px solid <%= t.border_color %>"></div>
+          </div>
+          <label class="inline"><input type="radio" name="theme" value="<%= key %>" <%= layout.theme === key ? 'checked' : '' %>> <%= t.label %></label>
+        </div>
+      <% }); %>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Wallpaper</legend>
+    <% const wall = layout.bg_image ? (/^https?:/i.test(layout.bg_image) ? layout.bg_image : '/uploads/' + layout.bg_image) : ''; %>
+    <% if (wall) { %>
+      <div class="mb6"><img src="<%= wall %>" alt="wallpaper" style="max-height:110px;border:1px solid #999"></div>
+      <label class="inline"><input type="checkbox" name="remove_wallpaper" value="1"> remove current wallpaper</label>
+    <% } %>
+    <div class="field">
+      <label for="wallpaper">Upload an image</label>
+      <input type="file" id="wallpaper" name="wallpaper" accept="image/*">
+    </div>
+    <div class="field">
+      <label for="bg_image_url">&hellip;or paste an image URL</label>
+      <input type="url" id="bg_image_url" name="bg_image_url" placeholder="https://&hellip;/tile.gif" style="width:100%"
+             value="<%= /^https?:/i.test(layout.bg_image) ? layout.bg_image : '' %>">
+    </div>
+    <div class="formgrid">
+      <div class="field">
+        <label for="bg_repeat">Repeat</label>
+        <select id="bg_repeat" name="bg_repeat" style="width:100%">
+          <% ['repeat','no-repeat','repeat-x','repeat-y'].forEach(function (v) { %>
+            <option value="<%= v %>" <%= layout.bg_repeat === v ? 'selected' : '' %>><%= v %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="bg_size">Size</label>
+        <select id="bg_size" name="bg_size" style="width:100%">
+          <% [['auto','tile at real size'],['cover','cover the screen'],['contain','fit the screen'],['100% 100%','stretch']].forEach(function (v) { %>
+            <option value="<%= v[0] %>" <%= layout.bg_size === v[0] ? 'selected' : '' %>><%= v[1] %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="bg_attachment">Scrolling</label>
+        <select id="bg_attachment" name="bg_attachment" style="width:100%">
+          <option value="fixed" <%= layout.bg_attachment === 'fixed' ? 'selected' : '' %>>fixed (stays put)</option>
+          <option value="scroll" <%= layout.bg_attachment === 'scroll' ? 'selected' : '' %>>scroll with page</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="bg_position">Position</label>
+        <select id="bg_position" name="bg_position" style="width:100%">
+          <% ['center top','center center','left top','right top','center bottom'].forEach(function (v) { %>
+            <option value="<%= v %>" <%= layout.bg_position === v ? 'selected' : '' %>><%= v %></option>
+          <% }); %>
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Colours</legend>
+    <div class="formgrid">
+      <% [['bg_color','Page background'],['text_color','Text'],['link_color','Links'],['link_hover_color','Link hover'],
+          ['table_bg','Box background'],['border_color','Box borders'],['header_bg','Section header bar'],['header_text','Section header text']].forEach(function (f) { %>
+        <div class="field">
+          <label for="<%= f[0] %>"><%= f[1] %></label>
+          <span style="display:flex;gap:4px;align-items:center">
+            <input type="color" name="<%= f[0] %>" id="<%= f[0] %>" value="<%= /^#[0-9a-f]{6}$/i.test(layout[f[0]]) ? layout[f[0]] : '#ffffff' %>">
+            <code class="dim"><%= layout[f[0]] %></code>
+          </span>
+        </div>
+      <% }); %>
+    </div>
+    <div class="field">
+      <label for="table_opacity">Box transparency <span class="dim">(1 = solid, 0 = invisible)</span></label>
+      <input type="range" id="table_opacity" name="table_opacity" min="0" max="1" step="0.05" value="<%= layout.table_opacity %>" style="width:100%">
+      <div class="hint">Turning this down is how you let the wallpaper show through &mdash; the classic move.</div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Type &amp; Cursor</legend>
+    <div class="formgrid">
+      <div class="field">
+        <label for="font_family">Font</label>
+        <select id="font_family" name="font_family" style="width:100%">
+          <% FONTS.forEach(function (f) { %>
+            <option value="<%= f %>" <%= layout.font_family === f ? 'selected' : '' %> style="font-family:<%= f %>"><%= f.split(',')[0] %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="font_size">Size</label>
+        <select id="font_size" name="font_size" style="width:100%">
+          <% ['10px','11px','12px','13px','14px','16px'].forEach(function (v) { %>
+            <option value="<%= v %>" <%= layout.font_size === v ? 'selected' : '' %>><%= v %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="cursor_style">Cursor</label>
+        <select id="cursor_style" name="cursor_style" style="width:100%">
+          <% CURSORS.forEach(function (cur) { %>
+            <option value="<%= cur[0] %>" <%= layout.cursor_style === cur[0] ? 'selected' : '' %>><%= cur[1] %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="contact_style">Contact table style</label>
+        <select id="contact_style" name="contact_style" style="width:100%">
+          <% ['classic','compact','icons'].forEach(function (v) { %>
+            <option value="<%= v %>" <%= layout.contact_style === v ? 'selected' : '' %>><%= v %></option>
+          <% }); %>
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Extras</legend>
+    <div class="field">
+      <label for="marquee_text">Scrolling marquee at the top of my profile</label>
+      <input type="text" id="marquee_text" name="marquee_text" value="<%= layout.marquee_text %>"
+             placeholder="*~*~ WeLcOmE tO mY pAgE ~*~*" style="width:100%">
+    </div>
+    <div class="field">
+      <label for="custom_html_top">Custom HTML block (renders above everything)</label>
+      <textarea id="custom_html_top" name="custom_html_top" rows="5"><%= layout.custom_html_top %></textarea>
+      <div class="hint">Images, tables, glitter GIFs &mdash; whatever. Scripts and iframes are stripped.</div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Custom CSS <span class="dim">(the real hack)</span></legend>
+    <div class="field">
+      <textarea id="custom_css" name="custom_css" rows="14" spellcheck="false"
+                style="font-family:'Courier New',monospace" data-count="#css-count"><%= layout.custom_css %></textarea>
+      <div class="hint">
+        <span id="css-count"></span> &middot; every selector is automatically scoped to your profile,
+        so a broken rule can't take the whole site down with it.
+        <code>body { }</code> is rewritten to target your profile shell, which means old 2005 layout codes
+        mostly still work. <code>@import</code>, <code>expression()</code> and <code>javascript:</code> get stripped.
+      </div>
+    </div>
+    <details>
+      <summary class="btext" style="cursor:pointer">Show me some starter code</summary>
+      <pre style="background:#f4f4f4;border:1px solid #ccc;padding:6px;overflow:auto;font-size:11px">
+/* transparent boxes over a wallpaper */
+.ms-sect, .extendedNetwork {
+  background: rgba(0,0,0,.55) !important;
+  border: 1px solid #ff33cc !important;
+}
+
+/* glow text */
+body { color: #fff; text-shadow: 0 0 6px #ff33cc; }
+
+/* hide the details table */
+table.details { display: none; }
+
+/* make the top friends square and pink */
+.friendSpace .topfriend img { border: 3px solid #ff33cc; border-radius: 0; }
+
+/* rounded everything (very 2007 of you) */
+.ms-sect { border-radius: 10px; overflow: hidden; }
+      </pre>
+    </details>
+  </fieldset>
+
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <button type="submit" class="btn primary">Save Layout</button>
+    <a class="btn" href="/u/<%= me.username %>">Preview my profile &raquo;</a>
+  </div>
+</form>
+
+<form method="post" action="/edit/design/reset" class="mt6" data-confirm="Reset your whole layout back to default MySpace blue?">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <button class="btn small danger">Reset layout to default</button>
+</form>
+
+<%- include('partials/footer') %>

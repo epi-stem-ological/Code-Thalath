@@ -1,0 +1,97 @@
+<%- include('partials/header') %>
+<%- include('partials/tabs') %>
+
+<form method="post" action="/edit">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+
+  <fieldset>
+    <legend>Name &amp; Mood</legend>
+    <div class="formgrid">
+      <div class="field">
+        <label for="display_name">Display Name</label>
+        <input type="text" id="display_name" name="display_name" value="<%= me.display_name %>" style="width:100%">
+      </div>
+      <div class="field">
+        <label for="mood">Mood</label>
+        <select id="mood" name="mood" style="width:100%">
+          <option value="">(none)</option>
+          <% u.MOODS.forEach(function (m) { %>
+            <option value="<%= m[0] %>" data-emoji="<%= m[1] %>" <%= me.mood === m[0] ? 'selected' : '' %>><%= m[1] %> <%= m[0] %></option>
+          <% }); %>
+        </select>
+        <input type="hidden" name="mood_emoji" id="mood_emoji" value="<%= me.mood_emoji %>">
+      </div>
+    </div>
+    <div class="field">
+      <label for="headline">Headline</label>
+      <input type="text" id="headline" name="headline" value="<%= me.headline %>"
+             placeholder="the line under your name" style="width:100%">
+      <div class="hint">Basic HTML allowed here (&lt;b&gt;, &lt;font color&gt;, &lt;marquee&gt;&hellip;).</div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Blurbs</legend>
+    <div class="field">
+      <label for="about_me">About Me</label>
+      <textarea id="about_me" name="about_me" rows="10"><%= profile.about_me %></textarea>
+      <div class="hint">Full HTML allowed: tables, images, fonts, marquees. Scripts and iframes get stripped.</div>
+    </div>
+    <div class="field">
+      <label for="like_to_meet">Who I'd Like to Meet</label>
+      <textarea id="like_to_meet" name="like_to_meet" rows="6"><%= profile.like_to_meet %></textarea>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Interests</legend>
+    <% [['interests','General'],['music','Music'],['movies','Movies'],['television','Television'],['books','Books'],['heroes','Heroes']].forEach(function (f) { %>
+      <div class="field">
+        <label for="<%= f[0] %>"><%= f[1] %></label>
+        <textarea id="<%= f[0] %>" name="<%= f[0] %>" rows="3"><%= profile[f[0]] %></textarea>
+      </div>
+    <% }); %>
+  </fieldset>
+
+  <fieldset>
+    <legend>Details</legend>
+    <div class="formgrid">
+      <div class="field"><label for="status">Status</label>
+        <input type="text" id="status" name="status" value="<%= profile.status %>" placeholder="Single / Taken / Complicated" style="width:100%"></div>
+      <div class="field"><label for="here_for">Here For</label>
+        <input type="text" id="here_for" name="here_for" value="<%= profile.here_for %>" placeholder="Friends, Networking" style="width:100%"></div>
+      <div class="field"><label for="birthday">Birthday</label>
+        <input type="date" id="birthday" name="birthday" value="<%= profile.birthday %>" style="width:100%">
+        <label class="inline"><input type="checkbox" name="show_age" value="1" <%= profile.show_age ? 'checked' : '' %>> show my age</label></div>
+      <div class="field"><label for="hometown">Hometown</label>
+        <input type="text" id="hometown" name="hometown" value="<%= profile.hometown %>" style="width:100%"></div>
+      <div class="field"><label for="location">Location</label>
+        <input type="text" id="location" name="location" value="<%= profile.location %>" style="width:100%"></div>
+      <div class="field"><label for="occupation">Occupation</label>
+        <input type="text" id="occupation" name="occupation" value="<%= profile.occupation %>" style="width:100%"></div>
+      <div class="field"><label for="education">Education</label>
+        <input type="text" id="education" name="education" value="<%= profile.education %>" style="width:100%"></div>
+      <div class="field"><label for="religion">Religion</label>
+        <input type="text" id="religion" name="religion" value="<%= profile.religion %>" style="width:100%"></div>
+      <div class="field"><label for="ethnicity">Ethnicity</label>
+        <input type="text" id="ethnicity" name="ethnicity" value="<%= profile.ethnicity %>" style="width:100%"></div>
+      <div class="field"><label for="children">Children</label>
+        <input type="text" id="children" name="children" value="<%= profile.children %>" style="width:100%"></div>
+      <div class="field"><label for="smoke_drink">Smoke / Drink</label>
+        <input type="text" id="smoke_drink" name="smoke_drink" value="<%= profile.smoke_drink %>" style="width:100%"></div>
+      <div class="field"><label for="income">Income</label>
+        <input type="text" id="income" name="income" value="<%= profile.income %>" placeholder="lol" style="width:100%"></div>
+    </div>
+  </fieldset>
+
+  <button type="submit" class="btn primary">Save All Changes</button>
+</form>
+
+<script>
+  document.getElementById('mood')?.addEventListener('change', function () {
+    var opt = this.options[this.selectedIndex];
+    document.getElementById('mood_emoji').value = opt.getAttribute('data-emoji') || '';
+  });
+</script>
+
+<%- include('partials/footer') %>

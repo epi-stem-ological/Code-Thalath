@@ -1,0 +1,154 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">Site Stats</div>
+  <div class="body">
+    <div class="stat-strip">
+      <div class="s"><b><%= stats.users %></b>people</div>
+      <div class="s"><b><%= stats.messages %></b>mail</div>
+      <div class="s"><b><%= stats.ims %></b>IMs</div>
+      <div class="s"><b><%= stats.comments %></b>comments</div>
+      <div class="s"><b><%= stats.blogs %></b>blogs</div>
+      <div class="s"><b><%= stats.bulletins %></b>bulletins</div>
+      <div class="s"><b><%= stats.photos %></b>pics</div>
+      <div class="s"><b><%= stats.groups %></b>groups</div>
+    </div>
+  </div>
+</div>
+
+<div class="module">
+  <div class="modhead">Invite Codes</div>
+  <div class="body">
+    <form method="post" action="/admin/invite" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="number" name="count" value="1" min="1" max="50" style="width:70px">
+      <input type="text" name="note" placeholder="who is this for?" style="flex:1;min-width:140px">
+      <button class="btn primary">Generate</button>
+    </form>
+    <table class="grid mt6">
+      <% invites.forEach(function (i) { %>
+        <tr>
+          <td><code style="font-size:13px"><%= i.code %></code></td>
+          <td class="dim"><%= i.note %></td>
+          <td class="dim">
+            <% if (i.used_by) { %>used by <a href="/u/<%= i.used_username %>"><%= i.used_username %></a>
+            <% } else { %><span class="orangytext">unused</span><% } %>
+          </td>
+          <td class="right">
+            <% if (!i.used_by) { %>
+              <button type="button" class="btn small" onclick="navigator.clipboard.writeText(location.origin+'/register?code=<%= i.code %>');this.textContent='copied!'">copy link</button>
+              <form method="post" action="/admin/invite/<%= i.code %>/delete" style="display:inline">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <button class="btn small danger">✕</button>
+              </form>
+            <% } %>
+          </td>
+        </tr>
+      <% }); %>
+      <% if (!invites.length) { %><tr><td class="dim">No codes yet.</td></tr><% } %>
+    </table>
+  </div>
+</div>
+
+<div class="module">
+  <div class="modhead">People (<%= users.length %>)</div>
+  <div class="body tight">
+    <table class="grid">
+      <tr><th></th><th>Who</th><th>Joined</th><th>Last seen</th><th>Stats</th><th>Actions</th></tr>
+      <% users.forEach(function (usr) { %>
+        <tr class="<%= usr.disabled ? 'dim' : '' %>">
+          <td style="width:40px"><img class="thumb sm" src="<%= u.avatarUrl(usr) %>" alt=""></td>
+          <td>
+            <a href="/u/<%= usr.username %>" class="btext"><%= usr.display_name %></a>
+            <div class="dim">@<%= usr.username %>
+              <% if (usr.is_admin) { %><span class="pill">admin</span><% } %>
+              <% if (usr.disabled) { %><span class="pill">disabled</span><% } %>
+            </div>
+          </td>
+          <td class="dim nowrap"><%= u.fmtDate(usr.created_at) %></td>
+          <td class="dim nowrap"><%= u.timeAgo(usr.last_seen) %></td>
+          <td class="dim nowrap"><%= usr.friends %> friends<br><%= usr.photos %> pics<br><%= usr.profile_views %> views</td>
+          <td>
+            <% if (usr.id !== me.id) { %>
+              <form method="post" action="/admin/user/<%= usr.id %>/toggle" style="display:inline">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <button class="btn small"><%= usr.disabled ? 'enable' : 'disable' %></button>
+              </form>
+              <form method="post" action="/admin/user/<%= usr.id %>/admin" style="display:inline">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <button class="btn small"><%= usr.is_admin ? 'un-admin' : 'make admin' %></button>
+              </form>
+              <form method="post" action="/admin/user/<%= usr.id %>/delete" style="display:inline" data-confirm="Permanently delete <%= usr.username %> and everything they posted?">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <button class="btn small danger">delete</button>
+              </form>
+              <form method="post" action="/admin/user/<%= usr.id %>/password" style="display:flex;gap:3px;margin-top:3px">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <input type="text" name="password" placeholder="new password" style="width:110px">
+                <button class="btn small">reset</button>
+              </form>
+            <% } else { %><span class="dim">(you)</span><% } %>
+          </td>
+        </tr>
+      <% }); %>
+    </table>
+  </div>
+</div>
+
+<div class="ms-cols">
+  <div class="ms-col-right">
+    <div class="module blue">
+      <div class="modhead">Create an Account Directly</div>
+      <div class="body">
+        <form method="post" action="/admin/user/create">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <div class="formgrid">
+            <div class="field"><label>Username</label><input type="text" name="username" required style="width:100%"></div>
+            <div class="field"><label>Display name</label><input type="text" name="display_name" style="width:100%"></div>
+            <div class="field"><label>Password</label><input type="text" name="password" required style="width:100%"></div>
+          </div>
+          <label class="inline"><input type="checkbox" name="is_admin" value="1"> make them an admin</label>
+          <div><button class="btn primary mt6">Create account</button></div>
+          <div class="hint">Useful for people who will never manage an invite code. Tell them to change the password.</div>
+        </form>
+      </div>
+    </div>
+
+    <div class="module blue">
+      <div class="modhead">Message Everyone</div>
+      <div class="body">
+        <form method="post" action="/admin/broadcast" data-confirm="Send this to every account?">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <input type="text" name="subject" placeholder="Subject" style="width:100%">
+          <textarea name="body" rows="5" placeholder="Announcement&hellip;" style="margin-top:4px"></textarea>
+          <button class="btn primary mt6">Send to all</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="ms-col-left">
+    <div class="module">
+      <div class="modhead">Site Settings</div>
+      <div class="body">
+        <form method="post" action="/admin/site">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <div class="field"><label>Site name</label>
+            <input type="text" name="site_name" value="<%= siteName %>" style="width:100%"></div>
+          <div class="field"><label>Tagline</label>
+            <input type="text" name="tagline" value="<%= tagline %>" style="width:100%"></div>
+          <div class="field">
+            <label class="inline"><input type="checkbox" name="open_signup" value="1" <%= openSignup ? 'checked' : '' %>> allow sign-up without an invite code</label>
+            <div class="hint">Leave this off unless you want anyone with the URL to join.</div>
+          </div>
+          <div class="field"><label>Tom's welcome message</label>
+            <textarea name="welcome_message" rows="6"><%= welcome %></textarea>
+            <div class="hint">Sent automatically to every new member.</div></div>
+          <button class="btn primary">Save settings</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

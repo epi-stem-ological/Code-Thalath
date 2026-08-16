@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">
+    <span><%= p.caption || 'Untitled' %></span>
+    <a href="/photos/<%= p.username %>">&laquo; all pics</a>
+  </div>
+  <div class="body center">
+    <img src="/uploads/<%= p.file %>" alt="<%= p.caption %>" style="max-width:100%;border:1px solid #6699cc">
+    <div class="mt6">
+      <% if (prev) { %><a class="btn small" href="/photos/view/<%= prev %>">&laquo; Prev</a><% } %>
+      <% if (next) { %><a class="btn small" href="/photos/view/<%= next %>">Next &raquo;</a><% } %>
+    </div>
+    <div class="dim mt6">
+      by <a href="/u/<%= p.username %>"><%= p.display_name %></a> &middot; <%= u.fmtDateTime(p.created_at) %>
+    </div>
+  </div>
+  <% if (mine) { %>
+  <div class="body" style="border-top:1px solid #ccc">
+    <form method="post" action="/photos/view/<%= p.id %>/caption" style="display:flex;gap:4px">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="text" name="caption" value="<%= p.caption %>" placeholder="Caption" style="flex:1">
+      <button class="btn small">Save</button>
+    </form>
+    <form method="post" action="/photos/view/<%= p.id %>/delete" class="mt6" data-confirm="Delete this picture?">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="btn small danger">Delete picture</button>
+    </form>
+  </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>
