@@ -114,13 +114,18 @@ This is a deliberate trade: the whole point of a MySpace profile is that people 
 whatever they want on it. The allowlist is generous, so treat membership as the trust
 boundary. Only invite people you'd hand a text editor to.
 
-Uploads are served with `X-Content-Type-Options: nosniff`, a restrictive
-`Content-Security-Policy` and `sandbox`, so an uploaded SVG can't execute anything.
+Uploads require a session and are served with `X-Content-Type-Options: nosniff`, a
+restrictive `Content-Security-Policy` and `sandbox`, so an uploaded SVG can't execute
+anything and a leaked URL is worthless to a stranger. Set `PUBLIC_UPLOADS=1` to serve
+them openly instead — faster, CDN-cacheable, and anyone with a link can fetch a
+member's photo. It's off by default for a reason.
 
 Other protections: scrypt password hashing, HTTP-only session cookies with a 60-day
 lifetime, CSRF tokens on every mutating request (including multipart uploads, which are
-checked after the body is parsed), login and registration throttling, and per-route
-authorisation checks.
+checked after the body is parsed), login and registration throttling, per-route
+authorisation checks, and a site-wide CSP that blocks framing, plugins, `<base>`
+injection and off-site form posts. The CSP deliberately permits inline styles and
+scripts — that's what makes profile layouts work.
 
 Photos and profiles are visible to any signed-in member. There is no per-photo privacy —
 if something shouldn't be seen by the whole group, don't upload it.
@@ -143,8 +148,10 @@ Everything is optional. Copy `.env.example` if you want a reference.
 | `UPLOAD_DIR` | `./uploads` | Where uploaded files live |
 | `MAX_IMAGE_MB` | `12` | Per-image upload limit |
 | `MAX_AUDIO_MB` | `25` | Per-song upload limit |
-| `SECURE_COOKIES` | off | Set to `1` when serving over HTTPS |
+| `SECURE_COOKIES` | off | Set to `1` when serving over HTTPS (also enables HSTS) |
 | `TRUST_PROXY` | `1` | Hops of reverse proxy to trust |
+| `PUBLIC_UPLOADS` | off | Serve `/uploads` without a session so a CDN can cache it |
+| `TUNNEL_TOKEN` | — | Cloudflare Tunnel token, used by `docker-compose.yml` |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | *(generated)* | Override the auto-generated push keys |
 | `VAPID_SUBJECT` | `mailto:tom@thalath.space` | Contact for push services |
 | `NODE_ENV` | — | Set to `production` to hide stack traces |
@@ -158,7 +165,23 @@ welcome message are all editable at runtime in `/admin`.
 
 You need HTTPS for the home-screen app and push to work. Any of these is fine:
 
-### Behind Caddy (simplest)
+### Cloudflare Tunnel (recommended)
+
+Public HTTPS hostname on Cloudflare's edge, app running on any machine you own, **no
+inbound ports open**, and nothing deployed from the repository. Full walkthrough in
+**[docs/CLOUDFLARE.md](docs/CLOUDFLARE.md)**; the short version:
+
+```bash
+cp .env.example .env      # set TUNNEL_TOKEN from the Cloudflare dashboard
+docker compose up -d --build
+docker compose logs app   # first-run password
+```
+
+Note that Cloudflare **Pages and Workers cannot run this app** — no filesystem, no
+native modules, no long-lived SSE. Tunnel is the product that fits; the doc explains
+the trade in full.
+
+### Behind Caddy
 
 ```
 space.example.com {
@@ -268,6 +291,8 @@ public/sw.js           service worker: offline shell, push, notification clicks
 scripts/smoke.js       the test suite (npm test)
 scripts/make-icons.js  regenerates the PNG icons
 scripts/screenshot.js  drives a real browser and writes screenshots
+docker-compose.yml     app + cloudflared, for the Tunnel deployment
+docs/CLOUDFLARE.md     putting it on a public hostname
 ```
 
 Adding a field to profiles: add the column in `lib/db.js`, add it to the `UPDATE` in

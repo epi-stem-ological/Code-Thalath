@@ -1,0 +1,27 @@
+# Config-file variant, for running cloudflared directly on the host with
+# systemd instead of in Docker. Only needed if you created the tunnel from the
+# CLI (`cloudflared tunnel create thalath`) rather than the dashboard —
+# dashboard tunnels carry their routing in the token and need no file.
+#
+# Install to /etc/cloudflared/config.yml
+
+tunnel: THALATH_TUNNEL_ID          # from `cloudflared tunnel list`
+credentials-file: /etc/cloudflared/THALATH_TUNNEL_ID.json
+
+# Keep the connection pool warm; SSE holds sockets open for a long time.
+originRequest:
+  connectTimeout: 10s
+  # No read timeout: IM streams stay open indefinitely and must not be cut.
+  tcpKeepAlive: 30s
+  keepAliveConnections: 32
+  keepAliveTimeout: 90s
+  # The origin speaks plain HTTP on loopback; the hop to Cloudflare is
+  # already encrypted by the tunnel itself.
+  noTLSVerify: false
+  disableChunkedEncoding: false
+
+ingress:
+  - hostname: space.example.com
+    service: http://localhost:3000
+  # Everything else gets refused rather than silently proxied.
+  - service: http_status:404

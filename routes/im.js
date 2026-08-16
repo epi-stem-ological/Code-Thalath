@@ -198,9 +198,12 @@ router.get('/t/:id/stream', (req, res) => {
 
   res.set({
     'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache, no-transform',
+    // no-transform stops Cloudflare (and any other CDN) buffering the stream
+    // to compress it, which would hold messages back until the buffer filled.
+    'Cache-Control': 'no-cache, no-store, no-transform',
     Connection: 'keep-alive',
     'X-Accel-Buffering': 'no',
+    'Content-Encoding': 'identity',
   });
   res.flushHeaders?.();
   res.write('retry: 3000\n\n');

@@ -288,6 +288,14 @@ function wav() {
     const img = await alice.get(avatarMatch[1]);
     ok('uploaded file is served', img.status === 200);
     ok('uploads carry nosniff', img.headers.get('x-content-type-options') === 'nosniff');
+    ok('uploads are sandboxed by CSP', (img.headers.get('content-security-policy') || '').includes('sandbox'));
+    ok('uploads are not CDN-cacheable', (img.headers.get('cache-control') || '').includes('private'));
+
+    // The site is meant to sit on a public hostname behind Cloudflare, so an
+    // upload URL must be worthless without a session.
+    const anon = new Client('anon');
+    const leaked = await anon.get(avatarMatch[1]);
+    ok('uploads are not readable logged out', leaked.status === 404, `got ${leaked.status}`);
   }
 
   await alice.page('/edit/song');
@@ -668,6 +676,19 @@ function wav() {
 
   r = await alice.get('/uploads/../data/thalath.db');
   ok('path traversal on /uploads blocked', r.status === 404 || r.status === 301 || r.status === 400, `got ${r.status}`);
+
+  // headers for sitting on a public hostname
+  r = await alice.get('/home');
+  const csp = r.headers.get('content-security-policy') || '';
+  ok('CSP blocks framing', csp.includes("frame-ancestors 'none'"));
+  ok('CSP blocks plugins and base injection', csp.includes("object-src 'none'") && csp.includes("base-uri 'self'"));
+  ok('CSP pins form submissions to this origin', csp.includes("form-action 'self'"));
+  ok('CSP still allows hotlinked images', csp.includes('img-src') && csp.includes('https:'));
+  ok('clickjacking header set', r.headers.get('x-frame-options') === 'DENY');
+  ok('referrer policy set', r.headers.get('referrer-policy') === 'same-origin');
+
+  r = await ghost.get('/healthz');
+  ok('health endpoint is public', r.status === 200 && r.body === 'ok');
 
   // ---------------------------------------------------------------- admin
   section('Admin panel');

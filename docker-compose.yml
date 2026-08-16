@@ -1,0 +1,49 @@
+# Thalath Space behind a Cloudflare Tunnel.
+#
+#   1. cp .env.example .env   and set TUNNEL_TOKEN (see docs/CLOUDFLARE.md)
+#   2. docker compose up -d --build
+#   3. docker compose logs app     <- your Tom password prints here, once
+#
+# The app never binds a public port. cloudflared dials out to Cloudflare, so
+# there is nothing to forward on your router and no inbound firewall hole.
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      # Cloudflare terminates TLS, so the cookies must be marked secure and
+      # the proxy headers trusted for rate limiting to see real client IPs.
+      SECURE_COOKIES: "1"
+      TRUST_PROXY: "1"
+      SITE_NAME: ${SITE_NAME:-Thalath Space}
+      # First boot only. Leave unset to get a random password in the logs.
+      TOM_PASSWORD: ${TOM_PASSWORD:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@example.com}
+    volumes:
+      - data:/app/data
+      - uploads:/app/uploads
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in .env — see docs/CLOUDFLARE.md}
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  data:
+  uploads:

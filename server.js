@@ -22,17 +22,65 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
-app.use('/uploads', express.static(UPLOAD_DIR, {
-  maxAge: '30d',
-  setHeaders: (res) => {
-    // uploads are user content — never let the browser sniff them into scripts
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox");
-  },
-}));
+// Headers for an internet-facing origin. No global CSP script/style lockdown:
+// inline styles are the entire point of a MySpace profile. What is worth
+// locking down is everything else — framing, plugins, <base> injection and
+// where forms may post.
+const PUBLIC_UPLOADS = process.env.PUBLIC_UPLOADS === '1';
+const SITE_CSP = [
+  "default-src 'self'",
+  "img-src 'self' https: data:",      // members can hotlink images and wallpapers
+  "media-src 'self' https:",          // …and profile songs
+  "style-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline'",
+  "connect-src 'self'",
+  "worker-src 'self'",
+  "frame-src 'none'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ');
+
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'same-origin');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Content-Security-Policy', SITE_CSP);
+  if (process.env.SECURE_COOKIES === '1') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
+
+app.get('/healthz', (req, res) => res.type('text/plain').send('ok'));
+
+// Static site assets carry no secrets and need no session lookup.
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
 
 app.use(loadUser);
+
+/**
+ * Uploads are members-only by default. Filenames are unguessable, but once the
+ * site is on a public hostname "unguessable" is the only thing standing between
+ * a leaked URL and everyone's photos — so require a session instead.
+ * Set PUBLIC_UPLOADS=1 to serve them openly and let a CDN cache them.
+ */
+app.use('/uploads', (req, res, next) => {
+  if (PUBLIC_UPLOADS || req.user) return next();
+  res.status(404).end();
+}, express.static(UPLOAD_DIR, {
+  maxAge: '30d',
+  setHeaders: (res) => {
+    // user content — never let a browser sniff it into something executable
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox");
+    res.setHeader(
+      'Cache-Control',
+      PUBLIC_UPLOADS ? 'public, max-age=2592000' : 'private, max-age=2592000'
+    );
+  },
+}));
 
 // Template globals -----------------------------------------------------------
 app.use((req, res, next) => {
