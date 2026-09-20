@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">
+    <span>Browse People (<%= users.length %>)</span>
+    <span>
+      <% [['recent','Recently active'],['new','Newest'],['name','Name'],['views','Most viewed']].forEach(function (s) { %>
+        <a href="/browse?sort=<%= s[0] %>" style="<%= sort === s[0] ? 'font-weight:bold;color:#fff' : '' %>"><%= s[1] %></a>
+      <% }); %>
+    </span>
+  </div>
+  <div class="body">
+    <div class="people">
+      <% users.forEach(function (f) { %>
+        <div class="p">
+          <a href="/u/<%= f.username %>"><img src="<%= u.avatarUrl(f) %>" alt=""></a>
+          <a href="/u/<%= f.username %>"><%= f.display_name %></a>
+          <% if (u.isOnline(f)) { %><div class="online">● online</div>
+          <% } else { %><div class="offline"><%= u.timeAgo(f.last_seen) %></div><% } %>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

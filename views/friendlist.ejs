@@ -1,0 +1,22 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">
+    <span><%= user.display_name %>'s Friends (<%= friends.length %>)</span>
+    <a href="/u/<%= user.username %>">&laquo; back to profile</a>
+  </div>
+  <div class="body">
+    <% if (!friends.length) { %><div class="empty">No friends yet.</div><% } %>
+    <div class="people">
+      <% friends.forEach(function (f) { %>
+        <div class="p">
+          <a href="/u/<%= f.username %>"><img src="<%= u.avatarUrl(f) %>" alt=""></a>
+          <a href="/u/<%= f.username %>"><%= f.display_name %></a>
+          <% if (u.isOnline(f)) { %><div class="online">● online</div><% } %>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

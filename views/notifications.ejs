@@ -1,0 +1,27 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">
+    <span>Alerts</span>
+    <form method="post" action="/notifications/clear" data-confirm="Clear all alerts?">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="btn small">clear all</button>
+    </form>
+  </div>
+  <div class="body tight">
+    <% if (!rows.length) { %><div class="empty">Nothing new.</div><% } %>
+    <table class="grid">
+      <% rows.forEach(function (n) { %>
+        <tr class="<%= n.read_at ? '' : 'unread' %>">
+          <td style="width:44px">
+            <% if (n.username) { %><a href="/u/<%= n.username %>"><img class="thumb sm" src="<%= u.avatarUrl(n) %>" alt=""></a><% } %>
+          </td>
+          <td><a href="<%= n.url %>"><%= n.text %></a></td>
+          <td class="right dim nowrap"><%= u.timeAgo(n.created_at) %></td>
+        </tr>
+      <% }); %>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

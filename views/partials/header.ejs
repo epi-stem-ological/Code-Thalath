@@ -1,0 +1,61 @@
+<%- include('head') %>
+<div id="ms-topbar">
+  <div class="ms-shell">
+    <div id="ms-logo-row">
+      <a class="ms-logo" href="<%= me ? '/home' : '/' %>">
+        <%= siteName.split(' ')[0] %><span class="dot">space</span><small><%= tagline %></small>
+      </a>
+      <div id="ms-userbox">
+        <% if (me) { %>
+          <div class="ms-hello">Hello, <a href="/u/<%= me.username %>"><%= me.display_name %></a>!</div>
+          <div>
+            <a href="/settings">Account Settings</a> |
+            <form method="post" action="/logout" style="display:inline">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button type="submit" style="all:unset;color:#003399;cursor:pointer;text-decoration:underline">Log Out</button>
+            </form>
+          </div>
+        <% } else { %>
+          <div><a href="/login">Log In</a> | <a href="/register">Sign Up</a></div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <div id="ms-nav">
+    <ul>
+      <% function navlink(href, label, on, badge) { %>
+        <li><a href="<%= href %>" class="<%= nav === on ? 'on' : '' %>"><%= label %><% if (badge) { %><span class="badge"><%= badge > 99 ? '99+' : badge %></span><% } %></a></li>
+      <% } %>
+      <% if (me) { %>
+        <%- navlink('/home', 'Home', 'home') %>
+        <%- navlink('/browse', 'Browse', 'browse') %>
+        <%- navlink('/mail', 'Mail', 'mail', counts.mail) %>
+        <%- navlink('/im', 'IM', 'im', counts.im) %>
+        <%- navlink('/bulletins', 'Bulletins', 'bulletins') %>
+        <%- navlink('/blog', 'Blog', 'blog') %>
+        <%- navlink('/groups', 'Groups', 'groups') %>
+        <%- navlink('/photos', 'Pics', 'photos') %>
+        <%- navlink('/friends', 'Friends', 'friends', counts.requests) %>
+        <%- navlink('/notifications', 'Alerts', 'notifications', counts.notifs) %>
+        <%- navlink('/edit', 'Edit Profile', 'edit') %>
+        <% if (me.is_admin) { %><%- navlink('/admin', 'Admin', 'admin') %><% } %>
+      <% } else { %>
+        <%- navlink('/', 'Home', 'landing') %>
+        <%- navlink('/login', 'Log In', 'login') %>
+        <%- navlink('/register', 'Sign Up', 'register') %>
+      <% } %>
+    </ul>
+  </div>
+  <% if (me) { %>
+  <div id="ms-searchbar">
+    <form method="get" action="/search">
+      <input type="text" name="q" placeholder="Search people, blogs, bulletins&hellip;" value="<%= query.q || '' %>">
+      <button type="submit" class="btn small">Search</button>
+    </form>
+  </div>
+  <% } %>
+</div>
+
+<div id="ms-page">
+<% if (flash) { %><div class="ms-flash"><%= flash %></div><% } %>
+<% if (flashErr) { %><div class="ms-flash err"><%= flashErr %></div><% } %>

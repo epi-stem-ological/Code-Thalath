@@ -1,0 +1,183 @@
+<%- include('partials/header') %>
+
+<div class="ms-cols">
+
+  <!-- ===== left ===== -->
+  <div class="ms-col-left">
+    <div class="module">
+      <div class="modhead">My Stuff</div>
+      <div class="body center">
+        <a href="/u/<%= me.username %>"><img class="thumb lg" src="<%= u.avatarUrl(me) %>" alt="me" style="margin:0 auto"></a>
+        <div class="nametext mt6"><%= me.display_name %></div>
+        <% if (me.mood) { %><div><%= me.mood_emoji %> <%= me.mood %></div><% } %>
+        <div class="stat-strip mt6" style="justify-content:center">
+          <div class="s"><b><%= stats.views %></b>views</div>
+          <div class="s"><b><%= friendTotal %></b>friends</div>
+          <div class="s"><b><%= stats.comments %></b>comments</div>
+          <div class="s"><b><%= stats.photos %></b>pics</div>
+        </div>
+        <div class="mt6">
+          <a class="btn small" href="/edit">Edit Profile</a>
+          <a class="btn small" href="/edit/design">Change Layout</a>
+          <a class="btn small" href="/edit/top">Top <%= 8 %></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="modhead">Set My Mood</div>
+      <div class="body">
+        <form method="post" action="/settings/mood">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <select name="mood" style="width:100%">
+            <option value="">(no mood)</option>
+            <% u.MOODS.forEach(function (m) { %>
+              <option value="<%= m[0] %>" <%= me.mood === m[0] ? 'selected' : '' %>><%= m[1] %> <%= m[0] %></option>
+            <% }); %>
+          </select>
+          <input type="hidden" name="mood_emoji" value="<%= me.mood_emoji %>">
+          <input type="text" name="headline" value="<%= me.headline %>" placeholder="Headline" style="width:100%;margin-top:4px">
+          <input type="text" name="away_message" value="<%= me.away_message %>" placeholder="Away message" style="width:100%;margin-top:4px">
+          <button type="submit" class="btn small primary mt6">Update</button>
+        </form>
+      </div>
+    </div>
+
+    <% if (requests.length) { %>
+    <div class="module">
+      <div class="modhead">Friend Requests (<%= requests.length %>)</div>
+      <div class="body">
+        <% requests.forEach(function (r) { %>
+          <div class="row">
+            <a href="/u/<%= r.username %>"><img class="thumb sm" src="<%= u.avatarUrl(r) %>" alt=""></a>
+            <div style="flex:1">
+              <a href="/u/<%= r.username %>" class="btext"><%= r.display_name %></a>
+              <div style="margin-top:3px">
+                <form method="post" action="/friends/accept/<%= r.username %>" style="display:inline">
+                  <input type="hidden" name="_csrf" value="<%= csrf %>">
+                  <button class="btn small primary">Accept</button>
+                </form>
+                <form method="post" action="/friends/deny/<%= r.username %>" style="display:inline">
+                  <input type="hidden" name="_csrf" value="<%= csrf %>">
+                  <button class="btn small">Deny</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+    <% } %>
+
+    <div class="module">
+      <div class="modhead">Online Now (<%= onlineFriends.length %>)</div>
+      <div class="body">
+        <% if (!onlineFriends.length) { %><div class="dim">Nobody's around. <a href="/bulletins/compose">Post a bulletin.</a></div><% } %>
+        <div class="people">
+          <% onlineFriends.forEach(function (f) { %>
+            <div class="p">
+              <a href="/u/<%= f.username %>"><img src="<%= u.avatarUrl(f) %>" alt=""></a>
+              <a href="/u/<%= f.username %>"><%= f.display_name %></a>
+              <div><a class="btn small" href="/im/with/<%= f.username %>">IM</a></div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="modhead">Cool New People</div>
+      <div class="body">
+        <div class="people">
+          <% newPeople.forEach(function (f) { %>
+            <div class="p">
+              <a href="/u/<%= f.username %>"><img src="<%= u.avatarUrl(f) %>" alt=""></a>
+              <a href="/u/<%= f.username %>"><%= f.display_name %></a>
+            </div>
+          <% }); %>
+        </div>
+        <div class="right mt6"><a href="/browse">Browse everyone &raquo;</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== right ===== -->
+  <div class="ms-col-right">
+
+    <div class="module blue">
+      <div class="modhead">
+        <span>Bulletin Board</span>
+        <a href="/bulletins/compose">Post one &raquo;</a>
+      </div>
+      <div class="body tight">
+        <% if (!bulletins.length) { %><div class="empty">Nothing on the board.</div><% } %>
+        <table class="grid">
+          <% bulletins.forEach(function (b) { %>
+            <tr>
+              <td style="width:44px"><a href="/u/<%= b.username %>"><img class="thumb sm" src="<%= u.avatarUrl(b) %>" alt=""></a></td>
+              <td>
+                <a href="/bulletins/<%= b.id %>" class="btext"><%= b.subject %></a><br>
+                <span class="dim">from <a href="/u/<%= b.username %>"><%= b.display_name %></a> &middot; <%= u.timeAgo(b.created_at) %></span>
+              </td>
+            </tr>
+          <% }); %>
+        </table>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="modhead">
+        <span>Friends' Blogs</span>
+        <a href="/blog/new">Write one &raquo;</a>
+      </div>
+      <div class="body tight">
+        <% if (!blogs.length) { %><div class="empty">No entries yet.</div><% } %>
+        <table class="grid">
+          <% blogs.forEach(function (b) { %>
+            <tr>
+              <td style="width:44px"><a href="/u/<%= b.username %>"><img class="thumb sm" src="<%= u.avatarUrl(b) %>" alt=""></a></td>
+              <td>
+                <a href="/blog/entry/<%= b.id %>" class="btext"><%= b.title %></a>
+                <span class="pill"><%= b.category %></span><br>
+                <span class="dim">by <a href="/u/<%= b.username %>"><%= b.display_name %></a> &middot; <%= u.timeAgo(b.created_at) %></span>
+              </td>
+            </tr>
+          <% }); %>
+        </table>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="modhead"><span>New Comments On Me</span><a href="/u/<%= me.username %>#comments">All &raquo;</a></div>
+      <div class="body tight">
+        <% if (!newComments.length) { %><div class="empty">Nobody's written on your wall.</div><% } %>
+        <% newComments.forEach(function (c) { %>
+          <div class="row" style="padding:6px">
+            <a href="/u/<%= c.username %>"><img class="thumb sm" src="<%= u.avatarUrl(c) %>" alt=""></a>
+            <div style="flex:1;min-width:0">
+              <a href="/u/<%= c.username %>" class="btext"><%= c.display_name %></a>
+              <span class="dim"><%= u.timeAgo(c.created_at) %></span>
+              <div class="ugc"><%- c.body %></div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <% if (recentPhotos.length) { %>
+    <div class="module">
+      <div class="modhead">Friends' New Pics</div>
+      <div class="body">
+        <div class="photogrid">
+          <% recentPhotos.forEach(function (p) { %>
+            <a href="/photos/view/<%= p.id %>"><img src="/uploads/<%= p.file %>" alt=""></a>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+  </div>
+</div>
+
+<%- include('partials/footer') %>

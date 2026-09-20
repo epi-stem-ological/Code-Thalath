@@ -1,0 +1,67 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead"><span><%= e.title %></span><a href="/blog/<%= e.username %>">&laquo; <%= e.display_name %>'s blog</a></div>
+  <div class="body">
+    <div class="row" style="border:0;padding:0">
+      <a href="/u/<%= e.username %>"><img class="thumb" src="<%= u.avatarUrl(e) %>" alt=""></a>
+      <div>
+        <a href="/u/<%= e.username %>" class="nametext"><%= e.display_name %></a>
+        <div class="dim">
+          <%= u.fmtDateTime(e.created_at) %>
+          &middot; <span class="pill"><%= e.category %></span>
+          <% if (e.mood) { %>&middot; current mood: <b><%= e.mood %></b><% } %>
+          <% if (e.privacy !== 'everyone') { %>&middot; <span class="pill"><%= e.privacy === 'private' ? '🔒 private' : 'friends only' %></span><% } %>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <div class="ugc"><%- e.body %></div>
+  </div>
+  <div class="body" style="border-top:1px solid #ccc">
+    <form method="post" action="/blog/entry/<%= e.id %>/kudos" style="display:inline">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="btn <%= gaveKudos ? 'primary' : '' %>">★ Kudos (<%= kudos %>)</button>
+    </form>
+    <% if (e.author_id === me.id) { %>
+      <a class="btn small" href="/blog/entry/<%= e.id %>/edit">Edit</a>
+      <form method="post" action="/blog/entry/<%= e.id %>/delete" style="display:inline" data-confirm="Delete this entry?">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="btn small danger">Delete</button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<a id="comments"></a>
+<div class="module blue">
+  <div class="modhead">Comments (<%= comments.length %>)</div>
+  <div class="body tight">
+    <% if (!comments.length) { %><div class="empty">No comments yet.</div><% } %>
+    <% comments.forEach(function (c) { %>
+      <div class="row" style="padding:6px;margin:0">
+        <a href="/u/<%= c.username %>"><img class="thumb sm" src="<%= u.avatarUrl(c) %>" alt=""></a>
+        <div style="flex:1;min-width:0">
+          <a href="/u/<%= c.username %>" class="btext"><%= c.display_name %></a>
+          <span class="dim"><%= u.fmtDateTime(c.created_at) %></span>
+          <div class="ugc"><%- c.body %></div>
+          <% if (c.author_id === me.id || e.author_id === me.id || me.is_admin) { %>
+            <form method="post" action="/blog/comment/<%= c.id %>/delete" data-confirm="Delete this comment?">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button class="btn small danger">delete</button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+  <div class="body" style="border-top:1px solid #ccc">
+    <form method="post" action="/blog/entry/<%= e.id %>/comment">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <textarea name="body" rows="3" placeholder="Leave a comment&hellip;" required></textarea>
+      <button class="btn primary mt6">Post Comment</button>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

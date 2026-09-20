@@ -1,0 +1,103 @@
+<%- include('partials/header') %>
+<%- include('partials/tabs') %>
+
+<form method="post" action="/edit/top">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <input type="hidden" name="order" id="order-field" value="">
+
+  <fieldset>
+    <legend>How many friends?</legend>
+    <p class="dim" style="margin-top:0">
+      MySpace shipped with 8 slots and everyone learned the hack to get more.
+      Here the hack is a number box. Pick anything from 0 to 64.
+    </p>
+    <div class="formgrid">
+      <div class="field">
+        <label for="top_count">Top <span id="count-echo"><%= layout.top_count %></span></label>
+        <input type="number" id="top_count" name="top_count" min="0" max="64" value="<%= layout.top_count %>" style="width:100%">
+        <div class="hint" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+          <% [4, 6, 8, 12, 16, 20, 24, 40].forEach(function (n) { %>
+            <button type="button" class="btn small" data-set-count="<%= n %>">Top <%= n %></button>
+          <% }); %>
+        </div>
+      </div>
+      <div class="field">
+        <label for="top_cols">Friends per row</label>
+        <input type="number" id="top_cols" name="top_cols" min="1" max="12" value="<%= layout.top_cols %>" style="width:100%">
+        <div class="hint">4 is the classic 2&times;4 grid. 3 looks good on a phone.</div>
+      </div>
+      <div class="field">
+        <label for="top_label">Section title</label>
+        <input type="text" id="top_label" name="top_label" value="<%= layout.top_label %>"
+               placeholder="<%= me.display_name %>'s Friend Space" style="width:100%">
+      </div>
+    </div>
+    <div class="hint">
+      Empty slots fill automatically with whoever was online most recently, so your page never looks abandoned.
+      Set the count to 0 to hide the section completely.
+    </div>
+  </fieldset>
+
+  <div class="ms-cols">
+    <div class="ms-col-right">
+      <div class="module">
+        <div class="modhead">Your ranking &mdash; drag to reorder</div>
+        <div class="body">
+          <% if (!chosen.length) { %>
+            <div class="empty" id="empty-note">Nobody ranked yet. Add friends from the list &rarr;</div>
+          <% } %>
+          <ul class="sortable" data-target="#order-field">
+            <% chosen.forEach(function (f) { %>
+              <li data-id="<%= f.id %>">
+                <span class="grip">⣿</span>
+                <span class="idx"></span>
+                <img src="<%= u.avatarUrl(f) %>" alt="">
+                <b style="flex:1"><%= f.display_name %></b>
+                <button type="button" class="btn small" data-mv="up">▲</button>
+                <button type="button" class="btn small" data-mv="down">▼</button>
+                <button type="button" class="btn small danger" data-mv="remove">✕</button>
+              </li>
+            <% }); %>
+          </ul>
+          <button type="submit" class="btn primary mt6">Save Top Friends</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ms-col-left">
+      <div class="module">
+        <div class="modhead">Your friends (<%= rest.length %>)</div>
+        <div class="body">
+          <% if (!rest.length) { %><div class="empty">Everyone's already ranked.</div><% } %>
+          <div class="people">
+            <% rest.forEach(function (f) { %>
+              <div class="p">
+                <img src="<%= u.avatarUrl(f) %>" alt="">
+                <a href="/u/<%= f.username %>"><%= f.display_name %></a>
+                <button type="button" class="btn small"
+                        data-add-top="<%= f.id %>"
+                        data-name="<%= f.display_name %>"
+                        data-avatar="<%= u.avatarUrl(f) %>">add</button>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+  document.querySelectorAll('[data-set-count]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var n = b.getAttribute('data-set-count');
+      document.getElementById('top_count').value = n;
+      document.getElementById('count-echo').textContent = n;
+    });
+  });
+  document.getElementById('top_count')?.addEventListener('input', function () {
+    document.getElementById('count-echo').textContent = this.value;
+  });
+</script>
+
+<%- include('partials/footer') %>

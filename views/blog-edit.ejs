@@ -1,0 +1,50 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead"><%= entry ? 'Edit Entry' : 'New Blog Entry' %></div>
+  <div class="body">
+    <form method="post" action="<%= entry ? '/blog/entry/' + entry.id + '/edit' : '/blog/new' %>">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="field">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" value="<%= entry ? entry.title : '' %>" required style="width:100%">
+      </div>
+      <div class="formgrid">
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category" name="category" style="width:100%">
+            <% categories.forEach(function (c) { %>
+              <option value="<%= c %>" <%= entry && entry.category === c ? 'selected' : '' %>><%= c %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="field">
+          <label for="mood">Current mood</label>
+          <select id="mood" name="mood" style="width:100%">
+            <option value="">(none)</option>
+            <% moods.forEach(function (m) { %>
+              <option value="<%= m[0] %>" <%= entry && entry.mood === m[0] ? 'selected' : '' %>><%= m[1] %> <%= m[0] %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="field">
+          <label for="privacy">Who can read this</label>
+          <select id="privacy" name="privacy" style="width:100%">
+            <option value="everyone" <%= entry && entry.privacy === 'everyone' ? 'selected' : '' %>>Everyone on the site</option>
+            <option value="friends" <%= !entry || entry.privacy === 'friends' ? 'selected' : '' %>>My friends only</option>
+            <option value="private" <%= entry && entry.privacy === 'private' ? 'selected' : '' %>>Just me (diary)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="body">Entry</label>
+        <textarea id="body" name="body" rows="20" required><%= entry ? entry.body : '' %></textarea>
+        <div class="hint">HTML allowed.</div>
+      </div>
+      <button class="btn primary"><%= entry ? 'Save Changes' : 'Publish' %></button>
+      <a class="btn" href="<%= entry ? '/blog/entry/' + entry.id : '/blog' %>">Cancel</a>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

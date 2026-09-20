@@ -1,0 +1,55 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <h2>Help</h2>
+  <div class="body">
+
+    <h3>Put it on your phone</h3>
+    <p><b>iPhone / iPad:</b> open the site in <b>Safari</b> (not Chrome), tap the Share button, then
+      <i>Add to Home Screen</i>. Open it from the home-screen icon after that &mdash; it runs full screen,
+      and notifications only work from there.</p>
+    <p><b>Android:</b> open in Chrome, tap the ⋮ menu, then <i>Install app</i>.</p>
+    <p>Then go to <a href="/settings">Settings</a> and turn on notifications.</p>
+
+    <h3>Your profile song</h3>
+    <p>Go to <a href="/edit/song">Edit Profile &rarr; Profile Song</a> and upload an audio file (MP3, M4A, OGG,
+      WAV, FLAC). It plays when someone opens your page.</p>
+    <p>Browsers block autoplay until the visitor has interacted with the page, so on a fresh tab the player
+      shows a Play button and starts the moment they tap anywhere. Nothing you can do about that &mdash;
+      it is the browser, not the site.</p>
+    <p>A pasted link only works if it points straight at an audio file. A YouTube or Spotify page will not play.</p>
+
+    <h3>Wallpaper and layout</h3>
+    <p><a href="/edit/design">Edit Profile &rarr; Design</a> covers backgrounds, colours, fonts, cursors and
+      a raw CSS box.</p>
+    <p>Two things worth knowing:</p>
+    <ul>
+      <li>Your wallpaper is applied to the whole page, like it was in 2005.</li>
+      <li>Your custom CSS is automatically scoped to your profile area. A broken rule can wreck your own page
+        but cannot break the navigation, so you can always get back to the editor and fix it. Old MySpace layout
+        codes that start with <code>body { }</code> get rewritten to point at your profile shell, so most of them
+        still do roughly the right thing.</li>
+    </ul>
+    <p>Turn <b>box transparency</b> down if you want the wallpaper showing through the content boxes.</p>
+
+    <h3>Top 8 &mdash; or Top anything</h3>
+    <p><a href="/edit/top">Edit Profile &rarr; Top Friends</a>. Set the count to any number from 0 to 64 and
+      choose how many appear per row. Drag to reorder, or use the ▲▼ buttons on a phone.</p>
+    <p>Empty slots fill themselves with whoever was online most recently, so the grid never looks half-dead.
+      Set the count to 0 to hide the section.</p>
+
+    <h3>HTML in posts</h3>
+    <p>About Me, blurbs, comments, blogs, bulletins and mail all accept HTML: tables, fonts, images,
+      <code>&lt;marquee&gt;</code>, <code>&lt;blink&gt;</code>, the lot. Scripts, iframes and event handlers
+      are stripped on save.</p>
+
+    <h3>Mail vs IM</h3>
+    <p><a href="/mail">Mail</a> is for long things and keeps a record. <a href="/im">IM</a> is live chat,
+      one-to-one or group, and updates in real time. Both can notify your phone.</p>
+
+    <h3>Something is broken</h3>
+    <p>Message <a href="/u/tom">Tom</a>.</p>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,95 @@
+<%- include('partials/header') %>
+
+<div class="ms-cols">
+  <div class="ms-col-right">
+    <div class="module">
+      <div class="modhead">
+        <span><%= g.name %></span>
+        <span>
+          <% if (member) { %>
+            <% if (g.owner_id !== me.id) { %>
+              <form method="post" action="/groups/<%= g.slug %>/leave" style="display:inline" data-confirm="Leave this group?">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <button class="btn small">leave</button>
+              </form>
+            <% } %>
+          <% } else { %>
+            <form method="post" action="/groups/<%= g.slug %>/join" style="display:inline">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button class="btn small primary">Join</button>
+            </form>
+          <% } %>
+        </span>
+      </div>
+      <div class="body"><%= g.description %></div>
+    </div>
+
+    <div class="module blue">
+      <div class="modhead">Topics (<%= topics.length %>)</div>
+      <div class="body tight">
+        <% if (!topics.length) { %><div class="empty">No topics yet.</div><% } %>
+        <table class="grid">
+          <% topics.forEach(function (t) { %>
+            <tr>
+              <td style="width:44px"><a href="/u/<%= t.username %>"><img class="thumb sm" src="<%= u.avatarUrl(t) %>" alt=""></a></td>
+              <td>
+                <% if (t.pinned) { %>📌 <% } %><% if (t.locked) { %>🔒 <% } %>
+                <a href="/groups/<%= g.slug %>/t/<%= t.id %>" class="btext"><%= t.title %></a>
+                <div class="dim">started by <a href="/u/<%= t.username %>"><%= t.display_name %></a> &middot; <%= u.timeAgo(t.created_at) %></div>
+              </td>
+              <td class="right dim nowrap"><%= t.replies %> posts<br><%= u.timeAgo(t.last_post || t.created_at) %></td>
+            </tr>
+          <% }); %>
+        </table>
+      </div>
+    </div>
+
+    <% if (member) { %>
+    <div class="module">
+      <div class="modhead">Start a Topic</div>
+      <div class="body">
+        <form method="post" action="/groups/<%= g.slug %>/topic">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <div class="field"><label for="title">Title</label>
+            <input type="text" id="title" name="title" required style="width:100%"></div>
+          <div class="field"><label for="body">First post</label>
+            <textarea id="body" name="body" rows="6" required></textarea></div>
+          <button class="btn primary">Post Topic</button>
+        </form>
+      </div>
+    </div>
+    <% } else { %>
+      <div class="ms-flash">Join the group to post.</div>
+    <% } %>
+  </div>
+
+  <div class="ms-col-left">
+    <div class="module">
+      <div class="modhead">Members (<%= members.length %>)</div>
+      <div class="body">
+        <div class="people">
+          <% members.forEach(function (m) { %>
+            <div class="p">
+              <a href="/u/<%= m.username %>"><img src="<%= u.avatarUrl(m) %>" alt=""></a>
+              <a href="/u/<%= m.username %>"><%= m.display_name %></a>
+              <% if (m.role !== 'member') { %><div class="pill"><%= m.role %></div><% } %>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+    <% if (g.owner_id === me.id || me.is_admin) { %>
+    <div class="module">
+      <div class="modhead">Owner tools</div>
+      <div class="body">
+        <form method="post" action="/groups/<%= g.slug %>/delete" data-confirm="Delete this group and every topic in it?">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <button class="btn small danger">Delete group</button>
+        </form>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

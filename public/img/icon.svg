@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <clipPath id="plate"><rect width="512" height="512" rx="112" ry="112"/></clipPath>
+  </defs>
+  <g clip-path="url(#plate)">
+    <rect width="512" height="512" fill="#3d6fb5"/>
+    <rect width="512" height="215" fill="#5b8ed4"/>
+    <circle cx="256" cy="200" r="88" fill="#ffffff"/>
+    <ellipse cx="256" cy="470" rx="165" ry="175" fill="#ffffff"/>
+    <path d="M0 410 L512 358 L512 512 L0 512 Z" fill="#ff9933"/>
+  </g>
+</svg>

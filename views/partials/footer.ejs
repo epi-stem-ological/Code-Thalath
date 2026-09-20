@@ -1,0 +1,24 @@
+</div><!-- /#ms-page -->
+
+<div id="ms-footer">
+  <%= siteName %> &copy; 2005&ndash;forever &middot; <%= tagline %><br>
+  <a href="/about">About</a> &middot;
+  <a href="/browse">Browse</a> &middot;
+  <a href="/settings">Settings</a> &middot;
+  <a href="/help">Help</a>
+</div>
+
+<% if (me) { %>
+<div id="ms-tabbar">
+  <a href="/home" class="<%= nav === 'home' ? 'on' : '' %>"><span class="ic">🏠</span>Home</a>
+  <a href="/mail" class="<%= nav === 'mail' ? 'on' : '' %>"><span class="ic">✉️</span>Mail<% if (counts.mail) { %><span class="badge"><%= counts.mail %></span><% } %></a>
+  <a href="/im" class="<%= nav === 'im' ? 'on' : '' %>"><span class="ic">💬</span>IM<% if (counts.im) { %><span class="badge"><%= counts.im %></span><% } %></a>
+  <a href="/bulletins" class="<%= nav === 'bulletins' ? 'on' : '' %>"><span class="ic">📢</span>Board</a>
+  <a href="/u/<%= me.username %>" class="<%= nav === 'profile' ? 'on' : '' %>"><span class="ic">😎</span>Me</a>
+</div>
+<% } %>
+
+<script src="/js/app.js?v=3"></script>
+<%- typeof pageScript !== 'undefined' ? pageScript : '' %>
+</body>
+</html>

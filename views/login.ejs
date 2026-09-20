@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+
+<div style="max-width:420px;margin:0 auto">
+  <div class="module">
+    <h2>Member Login</h2>
+    <div class="body">
+      <% if (error) { %><div class="ms-flash err"><%= error %></div><% } %>
+      <form method="post" action="/login">
+        <input type="hidden" name="next" value="<%= query.next || '' %>">
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" value="<%= username %>"
+                 autocomplete="username" autocapitalize="none" autocorrect="off" required style="width:100%">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required style="width:100%">
+        </div>
+        <button type="submit" class="btn primary">Log In</button>
+      </form>
+      <p class="dim mt6">No account? You need an <a href="/register">invite code</a>.</p>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

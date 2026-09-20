@@ -1,0 +1,36 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">
+    <span>
+      <a href="/mail?box=inbox" style="<%= box === 'inbox' ? 'font-weight:bold' : '' %>">Inbox</a> |
+      <a href="/mail?box=sent" style="<%= box === 'sent' ? 'font-weight:bold' : '' %>">Sent</a>
+    </span>
+    <a href="/mail/compose">Compose &raquo;</a>
+  </div>
+  <div class="body tight">
+    <% if (!rows.length) { %><div class="empty">Nothing here.</div><% } %>
+    <table class="grid">
+      <% if (rows.length) { %>
+      <tr><th style="width:44px"></th><th><%= box === 'inbox' ? 'From' : 'To' %></th><th>Subject</th><th class="right">When</th><th></th></tr>
+      <% } %>
+      <% rows.forEach(function (m) { %>
+        <tr class="<%= (box === 'inbox' && !m.read_at) ? 'unread' : '' %>">
+          <td><a href="/u/<%= m.username %>"><img class="thumb sm" src="<%= u.avatarUrl(m) %>" alt=""></a></td>
+          <td><a href="/u/<%= m.username %>"><%= m.display_name %></a></td>
+          <td><a href="/mail/<%= m.id %>"><%= m.subject %></a></td>
+          <td class="right dim nowrap"><%= u.timeAgo(m.created_at) %></td>
+          <td class="right">
+            <form method="post" action="/mail/<%= m.id %>/delete">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button class="btn small danger">✕</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </table>
+  </div>
+  <%- include('partials/pager', { baseUrl: '/mail?box=' + box }) %>
+</div>
+
+<%- include('partials/footer') %>

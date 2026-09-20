@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title><%= title %><%= title === siteName ? '' : ' | ' + siteName %></title>
+<meta name="description" content="<%= tagline %>">
+<meta name="theme-color" content="#6699cc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="<%= siteName %>">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/img/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/img/icon-180.png">
+<link rel="stylesheet" href="/css/site.css?v=3">
+<% if (typeof css !== 'undefined' && css) { %>
+<style id="ms-user-css"><%- css %></style>
+<% } %>
+</head>
+<body class="<%= typeof bodyClass !== 'undefined' ? bodyClass : '' %>">

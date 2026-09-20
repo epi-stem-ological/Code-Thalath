@@ -1,0 +1,9 @@
+<div class="module blue">
+  <div class="modhead">Edit Profile</div>
+  <div class="body" style="display:flex;flex-wrap:wrap;gap:4px">
+    <% tabs.forEach(function (t) { %>
+      <a class="btn small <%= t.on ? 'primary' : '' %>" href="<%= t.href %>"><%= t.label %></a>
+    <% }); %>
+    <a class="btn small" href="/u/<%= me.username %>">View My Profile &raquo;</a>
+  </div>
+</div>

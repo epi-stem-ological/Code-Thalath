@@ -1,0 +1,36 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">
+    <span><%= user ? user.display_name + "'s Blog" : "Friends' Blogs" %></span>
+    <a href="/blog/new">Write an entry &raquo;</a>
+  </div>
+  <div class="body tight">
+    <% if (!rows.length) { %><div class="empty">No entries yet.</div><% } %>
+    <% rows.forEach(function (b) { %>
+      <div class="row" style="padding:8px">
+        <a href="/u/<%= b.username %>"><img class="thumb" src="<%= u.avatarUrl(b) %>" alt=""></a>
+        <div style="flex:1;min-width:0">
+          <a href="/blog/entry/<%= b.id %>" class="nametext"><%= b.title %></a>
+          <span class="pill"><%= b.category %></span>
+          <% if (b.privacy === 'private') { %><span class="pill">🔒 private</span><% } %>
+          <% if (b.privacy === 'friends') { %><span class="pill">friends only</span><% } %>
+          <div class="dim">
+            by <a href="/u/<%= b.username %>"><%= b.display_name %></a>
+            &middot; <%= u.fmtDateTime(b.created_at) %>
+            <% if (b.mood) { %>&middot; mood: <b><%= b.mood %></b><% } %>
+          </div>
+          <div class="ugc dim" style="max-height:52px;overflow:hidden">
+            <%- String(b.body).replace(/<[^>]*>/g, ' ').slice(0, 260) %>&hellip;
+          </div>
+          <div class="dim mt6">
+            <a href="/blog/entry/<%= b.id %>"><%= b.comment_count %> comments</a> &middot; <%= b.kudos %> kudos
+            <% if (b.author_id === me.id) { %> &middot; <a href="/blog/entry/<%= b.id %>/edit">edit</a><% } %>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,85 @@
+<%- include('partials/header') %>
+<%- include('partials/tabs') %>
+
+<div class="ms-cols">
+  <div class="ms-col-right">
+    <div class="module">
+      <div class="modhead">Your Profile Song</div>
+      <div class="body">
+        <form method="post" action="/edit/song" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+
+          <div class="formgrid">
+            <div class="field">
+              <label for="song_title">Song Title</label>
+              <input type="text" id="song_title" name="song_title" value="<%= profile.song_title %>" style="width:100%">
+            </div>
+            <div class="field">
+              <label for="song_artist">Artist</label>
+              <input type="text" id="song_artist" name="song_artist" value="<%= profile.song_artist %>" style="width:100%">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="songfile">Upload an audio file</label>
+            <input type="file" id="songfile" name="songfile" accept="audio/*">
+            <div class="hint">MP3, M4A, OGG, WAV, FLAC. Max 25&nbsp;MB. Uploading replaces whatever is set now.</div>
+          </div>
+
+          <div class="field">
+            <label for="song_url">&hellip;or paste a direct audio link</label>
+            <input type="url" id="song_url" name="song_url"
+                   value="<%= /^https?:/i.test(profile.song_url) ? profile.song_url : '' %>"
+                   placeholder="https://example.com/song.mp3" style="width:100%">
+            <div class="hint">
+              Must be a direct link to an audio file. YouTube/Spotify page links will not play &mdash;
+              upload the file instead.
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="inline">
+              <input type="checkbox" name="song_autoplay" value="1" <%= profile.song_autoplay ? 'checked' : '' %>>
+              Autoplay when someone opens my profile
+            </label>
+            <div class="hint">
+              Phones and most desktop browsers block autoplay until the visitor taps something.
+              When that happens the player shows a Play button instead. That is the browser's rule, not ours.
+            </div>
+          </div>
+
+          <button type="submit" class="btn primary">Save Song</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="ms-col-left">
+    <div class="module">
+      <div class="modhead">Preview</div>
+      <div class="body">
+        <% const src = profile.song_url ? (/^https?:/i.test(profile.song_url) ? profile.song_url : '/uploads/' + profile.song_url) : ''; %>
+        <% if (src) { %>
+          <div class="ms-player" id="ms-player" data-src="<%= src %>" data-autoplay="0">
+            <div class="np">▶ Now playing<span class="eq"><i></i><i></i><i></i></span></div>
+            <div class="title"><%= profile.song_title || 'Untitled Track' %></div>
+            <div class="artist"><%= profile.song_artist || me.display_name %></div>
+            <div class="ctl">
+              <button type="button" data-act="play">Play</button>
+              <div class="bar" data-act="seek"><i></i></div>
+              <span class="time">0:00 / 0:00</span>
+            </div>
+          </div>
+          <form method="post" action="/edit/song/remove" class="mt6" data-confirm="Remove your profile song?">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="btn small danger">Remove song</button>
+          </form>
+        <% } else { %>
+          <div class="empty">No song set.<br>Your profile will be quiet.</div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

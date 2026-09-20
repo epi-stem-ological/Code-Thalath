@@ -1,0 +1,32 @@
+<%- include('partials/header') %>
+
+<div class="module friendsComments">
+  <div class="modhead">
+    <span><%= user.display_name %>'s Comments (<%= total %>)</span>
+    <a href="/u/<%= user.username %>">&laquo; back to profile</a>
+  </div>
+  <div class="body tight">
+    <% if (!comments.length) { %><div class="empty">No comments.</div><% } %>
+    <% comments.forEach(function (c) { %>
+      <div class="cmt">
+        <div class="who">
+          <a href="/u/<%= c.username %>"><img src="<%= u.avatarUrl(c) %>" alt=""></a>
+          <a href="/u/<%= c.username %>"><%= c.display_name %></a>
+        </div>
+        <div class="what">
+          <div class="when"><%= u.fmtDateTime(c.created_at) %></div>
+          <div class="ugc"><%- c.body %></div>
+          <% if (user.id === me.id || c.author_id === me.id || me.is_admin) { %>
+            <form method="post" action="/comment/<%= c.id %>/delete" data-confirm="Delete this comment?" style="margin-top:3px">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button class="btn small danger">delete</button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+  <%- include('partials/pager', { baseUrl: '/u/' + user.username + '/comments' }) %>
+</div>
+
+<%- include('partials/footer') %>

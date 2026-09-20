@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+
+<% if (mine) { %>
+<div class="module">
+  <div class="modhead">Upload Pictures</div>
+  <div class="body">
+    <form method="post" action="/photos/upload" enctype="multipart/form-data">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="file" name="photos" accept="image/*" multiple required>
+      <input type="text" name="caption" placeholder="Caption (optional)" style="margin-top:4px;width:100%">
+      <% if (albums.length) { %>
+        <select name="album_id" style="margin-top:4px;width:100%">
+          <option value="">No album</option>
+          <% albums.forEach(function (a) { %><option value="<%= a.id %>"><%= a.name %></option><% }); %>
+        </select>
+      <% } %>
+      <button class="btn primary mt6">Upload</button>
+      <span class="hint">Up to 12 at a time, 12&nbsp;MB each.</span>
+    </form>
+  </div>
+</div>
+<% } %>
+
+<div class="module">
+  <div class="modhead">
+    <span><%= user.display_name %>'s Pics (<%= photos.length %>)</span>
+    <a href="/u/<%= user.username %>">&laquo; profile</a>
+  </div>
+  <div class="body">
+    <% if (!photos.length) { %><div class="empty">No pictures yet.</div><% } %>
+    <div class="photogrid">
+      <% photos.forEach(function (p) { %>
+        <a href="/photos/view/<%= p.id %>" title="<%= p.caption %>"><img src="/uploads/<%= p.file %>" alt="<%= p.caption %>"></a>
+      <% }); %>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

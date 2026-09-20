@@ -1,0 +1,34 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead"><span>Post a Bulletin</span><a href="/bulletins">&laquo; back</a></div>
+  <div class="body">
+    <p class="dim" style="margin-top:0">This goes out to all <%= u.friendCount(me.id) %> of your friends.</p>
+    <form method="post" action="/bulletins/post">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="field">
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" name="subject" value="<%= subject %>" required style="width:100%">
+      </div>
+      <div class="field">
+        <label for="body">Body</label>
+        <textarea id="body" name="body" rows="14" required><%= body %></textarea>
+        <div class="hint">HTML allowed.</div>
+      </div>
+      <button class="btn primary">Post to Friends</button>
+      <a class="btn" href="/bulletins">Cancel</a>
+    </form>
+  </div>
+</div>
+
+<div class="module blue">
+  <div class="modhead">Surveys</div>
+  <div class="body">
+    <p class="dim" style="margin-top:0">Load a classic survey into the box above and fill in the blanks.</p>
+    <% Object.keys(surveys).forEach(function (key) { %>
+      <a class="btn small" href="/bulletins/compose?survey=<%= key %>"><%= surveys[key].title %></a>
+    <% }); %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

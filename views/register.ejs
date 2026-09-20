@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+
+<div style="max-width:460px;margin:0 auto">
+  <div class="module">
+    <h2>Join <%= siteName %></h2>
+    <div class="body">
+      <% if (error) { %><div class="ms-flash err"><%= error %></div><% } %>
+      <form method="post" action="/register">
+        <% if (!openSignup) { %>
+        <div class="field">
+          <label for="code">Invite Code</label>
+          <input type="text" id="code" name="code" value="<%= form.code %>"
+                 placeholder="XXXXX-XXXXX" autocapitalize="characters" required style="width:100%">
+          <div class="hint">Tom hands these out. One code, one account.</div>
+        </div>
+        <% } %>
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" value="<%= form.username %>"
+                 autocapitalize="none" autocorrect="off" required style="width:100%">
+          <div class="hint">This becomes your URL: /u/yourname</div>
+        </div>
+        <div class="field">
+          <label for="display_name">Display Name</label>
+          <input type="text" id="display_name" name="display_name" value="<%= form.display_name %>"
+                 placeholder="What people call you" style="width:100%">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="new-password" required style="width:100%">
+          <div class="hint">At least 8 characters.</div>
+        </div>
+        <div class="field">
+          <label for="confirm">Confirm Password</label>
+          <input type="password" id="confirm" name="confirm" autocomplete="new-password" required style="width:100%">
+        </div>
+        <button type="submit" class="btn primary">Create My Profile</button>
+      </form>
+      <p class="dim mt6">Already in? <a href="/login">Log in</a>.</p>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

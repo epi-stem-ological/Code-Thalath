@@ -1,0 +1,292 @@
+<%- include('partials/header') %>
+
+<div id="ms-profile">
+
+  <% if (headerHtml) { %><div class="ugc mb6"><%- headerHtml %></div><% } %>
+  <% if (marquee) { %>
+    <div class="ms-sect"><div class="in"><marquee scrollamount="4"><%= marquee %></marquee></div></div>
+  <% } %>
+
+  <div class="profile-cols">
+
+    <!-- ================= LEFT COLUMN ================= -->
+    <div class="col-l">
+
+      <h1 class="profile-name"><%= user.display_name %></h1>
+      <% if (user.headline) { %><div class="mb6 ugc"><%- user.headline %></div><% } %>
+
+      <% if (song) { %>
+        <div class="ms-player" id="ms-player"
+             data-src="<%= song %>"
+             data-autoplay="<%= profile.song_autoplay ? '1' : '0' %>">
+          <div class="np">▶ Now playing<span class="eq"><i></i><i></i><i></i></span></div>
+          <div class="title"><%= profile.song_title || 'Untitled Track' %></div>
+          <div class="artist"><%= profile.song_artist || user.display_name %></div>
+          <div class="ctl">
+            <button type="button" data-act="play">Play</button>
+            <div class="bar" data-act="seek"><i></i></div>
+            <span class="time">0:00 / 0:00</span>
+          </div>
+          <div class="np" data-role="hint" style="display:none;margin-top:4px">tap play — your phone blocked autoplay</div>
+        </div>
+      <% } %>
+
+      <img class="pic-main" src="<%= u.avatarUrl(user) %>" alt="<%= user.display_name %>">
+
+      <div class="ms-sect mt6"><div class="in">
+        <div class="btext"><%= user.display_name %></div>
+        <% if (profile.status) { %><div><%= profile.status %></div><% } %>
+        <% if (u.ageFor(profile.birthday) !== null && profile.show_age) { %>
+          <div><%= u.ageFor(profile.birthday) %> years old</div>
+        <% } %>
+        <% if (profile.location) { %><div><%= profile.location %></div><% } %>
+        <div class="mt6 dim">Last Login: <%= u.timeAgo(user.last_seen) %></div>
+        <% if (u.isOnline(user)) { %><div class="online"><span class="dot">●</span> ONLINE NOW!</div><% } %>
+        <% if (user.mood) { %>
+          <div class="mt6">Mood: <b><%= user.mood_emoji %> <%= user.mood %></b></div>
+        <% } %>
+        <% if (user.away_message) { %>
+          <div class="dim">Away: <%= user.away_message %></div>
+        <% } %>
+        <div class="viewmy mt6">
+          <b>View My:</b>
+          <a href="/photos/<%= user.username %>">Pics</a> |
+          <a href="/blog/<%= user.username %>">Blog</a> |
+          <a href="/u/<%= user.username %>/friends">Friends</a>
+        </div>
+      </div></div>
+
+      <!-- contact table -->
+      <div class="ms-sect">
+        <div class="ms-secthead">Contacting <%= user.display_name %></div>
+        <div class="in">
+          <table class="contactTable"><tbody>
+            <tr>
+              <td><a href="/mail/compose?to=<%= user.username %>"><span class="ico">✉️</span>Send Message</a></td>
+              <td><a href="/im/with/<%= user.username %>"><span class="ico">💬</span>Instant Message</a></td>
+            </tr>
+            <tr>
+              <td>
+                <% if (isMe) { %>
+                  <a href="/edit"><span class="ico">✏️</span>Edit Profile</a>
+                <% } else if (!friendState) { %>
+                  <form method="post" action="/friends/add/<%= user.username %>">
+                    <input type="hidden" name="_csrf" value="<%= csrf %>">
+                    <button type="submit" class="btn small">➕ Add to Friends</button>
+                  </form>
+                <% } else if (friendState.status === 'pending') { %>
+                  <% if (friendState.requester_id === me.id) { %>
+                    <span class="dim">⏳ Request pending</span>
+                  <% } else { %>
+                    <form method="post" action="/friends/accept/<%= user.username %>">
+                      <input type="hidden" name="_csrf" value="<%= csrf %>">
+                      <button type="submit" class="btn small primary">✔ Accept Friend</button>
+                    </form>
+                  <% } %>
+                <% } else { %>
+                  <span class="orangytext">★ Friends</span>
+                <% } %>
+              </td>
+              <td><a href="/u/<%= user.username %>/friends"><span class="ico">👥</span><%= friendCount %> Friends</a></td>
+            </tr>
+            <tr>
+              <td><a href="/bulletins/compose?to=<%= user.username %>"><span class="ico">📢</span>Post Bulletin</a></td>
+              <td><a href="#comments"><span class="ico">💌</span>Leave Comment</a></td>
+            </tr>
+            <% if (!isMe) { %>
+            <tr>
+              <td>
+                <form method="post" action="/friends/block/<%= user.username %>" onsubmit="return confirm('Block <%= user.display_name %>?')">
+                  <input type="hidden" name="_csrf" value="<%= csrf %>">
+                  <button type="submit" class="btn small danger">🚫 Block User</button>
+                </form>
+              </td>
+              <td><a href="/mail/compose?to=<%= user.username %>&amp;fwd=<%= user.username %>"><span class="ico">↗️</span>Forward Profile</a></td>
+            </tr>
+            <% } %>
+          </tbody></table>
+        </div>
+      </div>
+
+      <!-- URL box -->
+      <div class="ms-sect">
+        <div class="ms-secthead"><%= user.display_name %>'s URL</div>
+        <div class="in userProfileURL" style="word-break:break-all">
+          <a href="/u/<%= user.username %>">/u/<%= user.username %></a>
+        </div>
+      </div>
+
+      <!-- interests -->
+      <div class="ms-sect interestsTable">
+        <div class="ms-secthead"><%= user.display_name %>'s Interests</div>
+        <table class="interests"><tbody>
+          <% const rows = [['General', blurbs.interests], ['Music', blurbs.music], ['Movies', blurbs.movies],
+                           ['Television', blurbs.television], ['Books', blurbs.books], ['Heroes', blurbs.heroes]];
+             const any = rows.some(r => r[1]); %>
+          <% if (!any) { %>
+            <tr><td class="lbl">General</td><td class="dim">Nothing here yet.</td></tr>
+          <% } %>
+          <% rows.forEach(function (r) { if (!r[1]) return; %>
+            <tr><td class="lbl"><%= r[0] %></td><td class="ugc"><%- r[1] %></td></tr>
+          <% }); %>
+        </tbody></table>
+      </div>
+
+      <!-- details -->
+      <% const details = [
+           ['Status', profile.status], ['Here for', profile.here_for],
+           ['Birthday', profile.show_age ? profile.birthday : ''],
+           ['Zodiac Sign', profile.zodiac], ['Hometown', profile.hometown],
+           ['Location', profile.location], ['Occupation', profile.occupation],
+           ['Education', profile.education], ['Religion', profile.religion],
+           ['Ethnicity', profile.ethnicity], ['Children', profile.children],
+           ['Smoke / Drink', profile.smoke_drink], ['Income', profile.income],
+         ].filter(d => d[1]); %>
+      <% if (details.length) { %>
+      <div class="ms-sect">
+        <div class="ms-secthead"><%= user.display_name %>'s Details</div>
+        <div class="in">
+          <table class="details"><tbody>
+            <% details.forEach(function (d) { %>
+              <tr><td class="k"><%= d[0] %>:</td><td><%= d[1] %></td></tr>
+            <% }); %>
+          </tbody></table>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="ms-sect">
+        <div class="in">
+          <table class="details"><tbody>
+            <tr><td class="k">Profile Views:</td><td><b><%= user.profile_views %></b></td></tr>
+            <tr><td class="k">Member Since:</td><td><%= u.fmtDate(user.created_at) %></td></tr>
+            <% if (isMe) { %>
+              <tr><td class="k">Viewers:</td><td><a href="/viewers">Who viewed me &raquo;</a></td></tr>
+            <% } %>
+          </tbody></table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= RIGHT COLUMN ================= -->
+    <div class="col-r">
+
+      <div class="extendedNetwork">
+        <span class="big"><%= user.display_name %></span> is in your extended network<br>
+        <span class="dim"><%= friendCount %> friends &middot; <%= commentTotal %> comments &middot; <%= user.profile_views %> profile views</span>
+      </div>
+
+      <!-- blurbs -->
+      <div class="ms-sect blurbs">
+        <div class="ms-secthead"><%= user.display_name %>'s Blurbs</div>
+        <div class="in">
+          <div class="orangytext">About me:</div>
+          <div class="ugc mb6"><%- blurbs.about || '<span class="dim">This user has not written anything yet.</span>' %></div>
+          <div class="orangytext">Who I'd like to meet:</div>
+          <div class="ugc"><%- blurbs.meet || '<span class="dim">&mdash;</span>' %></div>
+        </div>
+      </div>
+
+      <% if (latestBlog) { %>
+      <div class="ms-sect latestBlogEntry">
+        <div class="ms-secthead"><%= user.display_name %>'s Latest Blog Entry <span style="float:right"><a href="/blog/<%= user.username %>">[Subscribe to this Blog]</a></span></div>
+        <div class="in">
+          <a href="/blog/entry/<%= latestBlog.id %>" class="btext"><%= latestBlog.title %></a>
+          <span class="dim">(<%= u.fmtDate(latestBlog.created_at) %>)</span>
+          <div class="dim mt6"><a href="/blog/<%= user.username %>">[View All Blog Entries]</a></div>
+        </div>
+      </div>
+      <% } %>
+
+      <% if (photos.length) { %>
+      <div class="ms-sect">
+        <div class="ms-secthead"><%= user.display_name %>'s Photos <span style="float:right"><a href="/photos/<%= user.username %>">[<%= photoCount %> total]</a></span></div>
+        <div class="in">
+          <div class="photogrid">
+            <% photos.forEach(function (p) { %>
+              <a href="/photos/view/<%= p.id %>"><img src="/uploads/<%= p.file %>" alt="<%= p.caption %>"></a>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- friend space: Top N -->
+      <div class="ms-sect friendSpace">
+        <div class="ms-secthead">
+          <%= layout.top_label || (user.display_name + "'s Friend Space") %>
+        </div>
+        <div class="in" style="padding:4px">
+          <div class="dim center mb6">
+            <%= user.display_name %> has <b><%= friendCount %></b> friend<%= friendCount === 1 ? '' : 's' %>.
+            <% if (top.length) { %>Showing top <%= top.length %>.<% } %>
+          </div>
+          <% if (!top.length) { %>
+            <div class="empty">No top friends yet.<% if (isMe) { %> <a href="/edit/top">Pick some &raquo;</a><% } %></div>
+          <% } else { %>
+            <div class="topgrid">
+              <% top.forEach(function (f, i) { %>
+                <div class="topfriend">
+                  <a href="/u/<%= f.username %>"><img src="<%= u.avatarUrl(f) %>" alt="<%= f.display_name %>"></a>
+                  <a class="nm" href="/u/<%= f.username %>"><%= f.display_name %></a>
+                  <span class="rank"><%= i + 1 %></span>
+                  <% if (u.isOnline(f)) { %><div class="online">online</div><% } %>
+                </div>
+              <% }); %>
+            </div>
+          <% } %>
+          <div class="viewall">
+            <a href="/u/<%= user.username %>/friends">View All Friends &raquo;</a>
+            <% if (isMe) { %> | <a href="/edit/top">Change My Top <%= layout.top_count %></a><% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- comments -->
+      <a id="comments"></a>
+      <div class="ms-sect friendsComments">
+        <div class="ms-secthead">
+          <%= user.display_name %>'s Friends Comments
+          <span style="float:right"><a href="/u/<%= user.username %>/comments">[<%= commentTotal %> total]</a></span>
+        </div>
+        <div class="in" style="padding:0">
+          <% if (!comments.length) { %>
+            <div class="empty">No comments yet. Be the first.</div>
+          <% } %>
+          <% comments.forEach(function (c) { %>
+            <div class="cmt">
+              <div class="who">
+                <a href="/u/<%= c.username %>"><img src="<%= u.avatarUrl(c) %>" alt="<%= c.display_name %>"></a>
+                <a href="/u/<%= c.username %>"><%= c.display_name %></a>
+              </div>
+              <div class="what">
+                <div class="when"><%= u.fmtDateTime(c.created_at) %></div>
+                <div class="ugc"><%- c.body %></div>
+                <% if (isMe || c.author_id === me.id || me.is_admin) { %>
+                  <form method="post" action="/comment/<%= c.id %>/delete" onsubmit="return confirm('Delete this comment?')" style="margin-top:3px">
+                    <input type="hidden" name="_csrf" value="<%= csrf %>">
+                    <button type="submit" class="btn small danger">delete</button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+        <div class="in" style="border-top:1px solid #ccc;background:rgba(255,255,255,.5)">
+          <form method="post" action="/u/<%= user.username %>/comment">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <label>Add Comment</label>
+            <textarea name="body" rows="3" placeholder="Leave a comment&hellip; (HTML allowed, obviously)"></textarea>
+            <div class="mt6"><button type="submit" class="btn primary">Post Comment</button>
+              <a class="btn small" href="/u/<%= user.username %>/comments">View all <%= commentTotal %></a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

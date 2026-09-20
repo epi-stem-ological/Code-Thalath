@@ -1,0 +1,19 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">Who Viewed Me (<%= rows.length %>)</div>
+  <div class="body tight">
+    <% if (!rows.length) { %><div class="empty">Nobody yet. Post a bulletin.</div><% } %>
+    <table class="grid">
+      <% rows.forEach(function (r) { %>
+        <tr>
+          <td style="width:44px"><a href="/u/<%= r.username %>"><img class="thumb sm" src="<%= u.avatarUrl(r) %>" alt=""></a></td>
+          <td><a href="/u/<%= r.username %>" class="btext"><%= r.display_name %></a></td>
+          <td class="right dim"><%= u.timeAgo(r.created_at) %></td>
+        </tr>
+      <% }); %>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

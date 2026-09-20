@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+
+<div class="module">
+  <div class="modhead">Create a Group</div>
+  <div class="body">
+    <form method="post" action="/groups/new" enctype="multipart/form-data">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="field">
+        <label for="name">Group name</label>
+        <input type="text" id="name" name="name" required style="width:100%">
+      </div>
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3"></textarea>
+      </div>
+      <div class="field">
+        <label for="icon">Group icon (optional)</label>
+        <input type="file" id="icon" name="icon" accept="image/*">
+      </div>
+      <div class="field">
+        <label for="privacy">Privacy</label>
+        <select id="privacy" name="privacy" style="width:100%">
+          <option value="open">Open &mdash; anyone here can read and join</option>
+          <option value="private">Private &mdash; members only</option>
+        </select>
+      </div>
+      <button class="btn primary">Create Group</button>
+      <a class="btn" href="/groups">Cancel</a>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

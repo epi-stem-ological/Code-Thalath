@@ -1,0 +1,13 @@
+<%- include('partials/header') %>
+
+<div style="max-width:560px;margin:0 auto">
+  <div class="module">
+    <h2><%= title %></h2>
+    <div class="body">
+      <p><%= message %></p>
+      <p><a class="btn" href="<%= me ? '/home' : '/' %>">&laquo; Back to safety</a></p>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
