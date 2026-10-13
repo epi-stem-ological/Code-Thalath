@@ -1,0 +1,13 @@
+{
+  "name": "duty-ledger",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Importer-side customs and duty control layer (entry audit, duty recovery, SKU tariff monitor).",
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/**/*.test.ts"
+  },
+  "engines": {
+    "node": ">=22.6"
+  }
+}
