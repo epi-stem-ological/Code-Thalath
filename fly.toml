@@ -1,0 +1,61 @@
+# Fly.io deployment for Thalath Space.
+#
+# Set up and deployed by scripts/deploy-fly.sh — see docs/FLY.md.
+#
+# The three settings that matter most are auto_stop_machines, min_machines_running
+# and the volume mount. This app keeps all its state in one SQLite file on disk,
+# so exactly one machine may ever run: two would corrupt the database, and zero
+# would drop the live IM connections and stop push notifications arriving.
+
+app = "thalath-space"
+primary_region = "lhr"          # change to the region nearest your people
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3000"
+  HOST = "0.0.0.0"
+  # Fly terminates TLS at the edge and forwards over its private network, so
+  # cookies must be marked Secure and the proxy headers trusted for the login
+  # rate limiter to see real client IPs.
+  SECURE_COOKIES = "1"
+  TRUST_PROXY = "1"
+  # Both live on the one mounted volume below. The app creates these on boot.
+  DATA_DIR = "/data/db"
+  UPLOAD_DIR = "/data/uploads"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # Never scale to zero: a sleeping machine drops IM streams and silently
+  # swallows push notifications.
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    # Each open IM stream holds a connection for as long as the tab is open,
+    # so the limits are set well above the member count rather than by load.
+    type = "connections"
+    soft_limit = 200
+    hard_limit = 250
+
+# Fly restarts the machine if this fails, which is the whole supervision story.
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "20s"
+  method = "GET"
+  path = "/healthz"
+
+[mounts]
+  source = "thalath_data"
+  destination = "/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpus = 1

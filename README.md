@@ -165,10 +165,24 @@ welcome message are all editable at runtime in `/admin`.
 
 You need HTTPS for the home-screen app and push to work. Any of these is fine:
 
-### Cloudflare Tunnel (recommended)
+### Fly.io (recommended — least ongoing work)
 
-Public HTTPS hostname on Cloudflare's edge, app running on any machine you own, **no
-inbound ports open**, and nothing deployed from the repository. Full walkthrough in
+No server to patch, no domain, no Cloudflare. Fly supplies an HTTPS hostname, which
+is all the phone app and push notifications actually require. ~$3–6/month.
+Full walkthrough in **[docs/FLY.md](docs/FLY.md)**; once `FLY_API_TOKEN` is set:
+
+```bash
+./scripts/deploy-fly.sh      # also the command to ship an update
+```
+
+Note the one hard constraint: all state is a single SQLite file on one volume, so
+exactly one machine may run. `fly.toml` enforces that and the script asserts it.
+
+### Cloudflare Tunnel
+
+Use this instead if you want your own domain and your own box. Public HTTPS hostname
+on Cloudflare's edge, app running on a machine you own, **no inbound ports open**, and
+nothing deployed from the repository. Full walkthrough in
 **[docs/CLOUDFLARE.md](docs/CLOUDFLARE.md)**; the short version:
 
 ```bash
@@ -291,8 +305,11 @@ public/sw.js           service worker: offline shell, push, notification clicks
 scripts/smoke.js       the test suite (npm test)
 scripts/make-icons.js  regenerates the PNG icons
 scripts/screenshot.js  drives a real browser and writes screenshots
+fly.toml               Fly.io deployment (one machine, one volume)
+scripts/deploy-fly.sh  one-command deploy / update
 docker-compose.yml     app + cloudflared, for the Tunnel deployment
-docs/CLOUDFLARE.md     putting it on a public hostname
+docs/FLY.md            the recommended path, start to finish
+docs/CLOUDFLARE.md     the own-domain, own-server alternative
 ```
 
 Adding a field to profiles: add the column in `lib/db.js`, add it to the `UPDATE` in
