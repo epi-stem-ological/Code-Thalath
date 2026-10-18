@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-  Deploys Thalath Space to Fly.io from Windows. Safe to re-run — it is also
+  Deploys Thalath Space to Fly.io from Windows. Safe to re-run -- it is also
   the command to ship an update.
 
 .DESCRIPTION
@@ -11,6 +11,10 @@
   machines sharing it would corrupt it.
 
   Requires: flyctl installed, and `fly auth login` already done.
+
+  NOTE: keep this file pure ASCII. Windows PowerShell 5.1 decodes .ps1 as
+  Windows-1252, and a UTF-8 em-dash lands as a smart quote that silently
+  terminates the surrounding string.
 
 .EXAMPLE
   .\scripts\deploy-fly.ps1
@@ -27,7 +31,10 @@ param(
   [int]   $VolumeGb  = 3
 )
 
-$ErrorActionPreference = 'Stop'
+# Deliberately NOT 'Stop': with Stop, PowerShell 7 raises NativeCommandError
+# the moment flyctl writes anything to stderr, including routine progress.
+# Every native call below is checked via $LASTEXITCODE instead.
+$ErrorActionPreference = 'Continue'
 
 function Say  { param($m) Write-Host "`n> $m" -ForegroundColor Cyan }
 function Note { param($m) Write-Host "  $m" }
@@ -96,7 +103,7 @@ Say 'Waiting for the health check'
 $healthy = $false
 foreach ($i in 1..40) {
   try {
-    $r = Invoke-WebRequest -Uri "$Url/healthz" -TimeoutSec 5 -UseBasicParsing
+    $r = Invoke-WebRequest -Uri "$Url/healthz" -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
     if ($r.Content.Trim() -eq 'ok') { $healthy = $true; break }
   } catch { Start-Sleep -Seconds 3 }
 }
@@ -109,8 +116,8 @@ Note "$Url/healthz -> ok"
 
 Say 'Checking it is locked down'
 try {
-  Invoke-WebRequest -Uri "$Url/uploads/probe.png" -TimeoutSec 10 -UseBasicParsing | Out-Null
-  Warn 'uploads are readable when logged out — expected 404'
+  Invoke-WebRequest -Uri "$Url/uploads/probe.png" -TimeoutSec 10 -UseBasicParsing -ErrorAction Stop | Out-Null
+  Warn 'uploads are readable when logged out -- expected 404'
 } catch {
   # PowerShell 5.1 exposes the numeric code as .value__; PowerShell 7 gives an enum.
   $sc = $null
@@ -124,7 +131,7 @@ try {
   }
 }
 try {
-  $h = Invoke-WebRequest -Uri "$Url/" -TimeoutSec 10 -UseBasicParsing
+  $h = Invoke-WebRequest -Uri "$Url/" -TimeoutSec 10 -UseBasicParsing -ErrorAction Stop
   if ($h.Headers['Strict-Transport-Security']) { Note 'HSTS present' } else { Warn 'HSTS header missing' }
 } catch { Warn 'could not read headers from the home page' }
 
@@ -134,7 +141,7 @@ $logs = (fly logs -a $App --no-tail 2>&1 | Out-String)
 if ($logs -match 'password:\s*(\S+)') {
   Note "username: tom"
   Note "password: $($Matches[1])"
-  Note "(printed once, on first boot only — save it now)"
+  Note "(printed once, on first boot only -- save it now)"
 } else {
   Note "Not in the recent logs. If this was not the first deploy, you already have it."
   Note "Otherwise:  fly logs -a $App --no-tail | Select-String -Context 0,5 'First run'"
