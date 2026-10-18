@@ -317,10 +317,10 @@ router.post('/edit/song', requireLogin, audioUpload.single('songfile'), (req, re
     if (url && /^[A-Za-z0-9._-]+$/.test(url)) removeUpload(url);
     url = req.file.filename;
   } else if (typeof req.body.song_url === 'string' && req.body.song_url.trim() !== '') {
-    const link = cssUrl(req.body.song_url.trim());
-    if (!link) return res.redirect('/edit/song?err=' + encodeURIComponent('That link does not look like a direct audio URL.'));
-    if (url && /^[A-Za-z0-9._-]+$/.test(url)) removeUpload(url);
-    url = link;
+    // Remote links are no longer accepted: the browser would fetch them on
+    // every profile view, telling a third party who is looking and when.
+    return res.redirect('/edit/song?err=' + encodeURIComponent(
+      'Links to other sites are not supported. Upload the audio file instead - it stays on our server.'));
   }
 
   db.prepare('UPDATE profiles SET song_title = ?, song_artist = ?, song_url = ?, song_autoplay = ? WHERE user_id = ?')
@@ -381,11 +381,8 @@ router.post('/edit/design', requireLogin, imageUpload.single('wallpaper'), (req,
     if (bgImage && /^[A-Za-z0-9._-]+$/.test(bgImage)) removeUpload(bgImage);
     bgImage = '';
   } else if (typeof b.bg_image_url === 'string' && b.bg_image_url.trim()) {
-    const link = cssUrl(b.bg_image_url.trim());
-    if (link) {
-      if (bgImage && /^[A-Za-z0-9._-]+$/.test(bgImage)) removeUpload(bgImage);
-      bgImage = link;
-    }
+    return res.redirect('/edit/design?err=' + encodeURIComponent(
+      'Wallpapers must be uploaded, not linked. A linked image would report every visitor to the site hosting it.'));
   }
 
   const val = (key, fallback) => cssValue(

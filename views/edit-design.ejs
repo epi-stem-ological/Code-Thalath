@@ -35,11 +35,6 @@
       <label for="wallpaper">Upload an image</label>
       <input type="file" id="wallpaper" name="wallpaper" accept="image/*">
     </div>
-    <div class="field">
-      <label for="bg_image_url">&hellip;or paste an image URL</label>
-      <input type="url" id="bg_image_url" name="bg_image_url" placeholder="https://&hellip;/tile.gif" style="width:100%"
-             value="<%= /^https?:/i.test(layout.bg_image) ? layout.bg_image : '' %>">
-    </div>
     <div class="formgrid">
       <div class="field">
         <label for="bg_repeat">Repeat</label>

@@ -312,6 +312,56 @@ function wav() {
 
   r = await alice.post('/edit/song', { song_url: 'javascript:alert(1)', song_title: 'x', song_artist: 'y' });
   ok('javascript: song URL rejected', r.status === 302 && r.location.includes('err='));
+  r = await alice.post('/edit/song', { song_url: 'https://evil.example/track.mp3', song_title: 'x', song_artist: 'y' });
+  ok('remote song URL rejected', r.status === 302 && r.location.includes('err='), r.location);
+
+  // ------------------------------------------------------- privacy of media
+  section('Photo privacy');
+
+  // A real phone photo carries GPS. Upload one and check it does not survive.
+  const exifJpeg = (() => {
+    const seg = (m, p) => { const l = Buffer.alloc(2); l.writeUInt16BE(p.length + 2);
+      return Buffer.concat([Buffer.from([0xFF, m]), l, p]); };
+    return Buffer.concat([
+      Buffer.from([0xFF, 0xD8]),
+      seg(0xE1, Buffer.from('Exif\0\0II*\0GPSLatitude=51.5074 GPSLongitude=-0.1278 Make=iPhone15')),
+      seg(0xDB, Buffer.alloc(16, 3)),
+      seg(0xDA, Buffer.from([1, 0])),
+      Buffer.from([0xA1, 0xB2, 0xC3, 0xD4]),
+      Buffer.from([0xFF, 0xD9]),
+    ]);
+  })();
+
+  await alice.page('/photos/alice');
+  r = await alice.postMultipart('/photos/upload', { caption: 'family' },
+    { photos: { data: exifJpeg, type: 'image/jpeg', name: 'family.jpg' } });
+  ok('photo with EXIF uploads', r.status === 302);
+
+  r = await alice.page('/photos/alice');
+  const shots = [...r.body.matchAll(/\/uploads\/([A-Za-z0-9._-]+\.jpg)/g)].map((m) => m[1]);
+  ok('uploaded jpeg is listed', shots.length > 0);
+  if (shots.length) {
+    const got = await fetch(BASE + '/uploads/' + shots[shots.length - 1],
+      { headers: { cookie: alice.cookieHeader() } });
+    const bytes = Buffer.from(await got.arrayBuffer());
+    ok('GPS coordinates stripped from stored file', !bytes.includes('GPSLatitude'), 'GPS SURVIVED');
+    ok('device model stripped', !bytes.includes('iPhone15'));
+    ok('image data survived scrubbing', bytes.includes(Buffer.from([0xA1, 0xB2, 0xC3, 0xD4])));
+    ok('still a valid JPEG', bytes[0] === 0xFF && bytes[1] === 0xD8);
+  }
+
+  // A remote <img> in a profile is a tracking pixel. It must not survive.
+  await alice.page('/edit');
+  await alice.post('/edit', { ...profileForm,
+    about_me: 'hi <img src="https://tracker.example/pixel.gif"> there <img src="/uploads/ok.jpg">' });
+  r = await alice.page('/u/alice');
+  ok('remote tracking image stripped', !r.body.includes('tracker.example'), 'TRACKER SURVIVED');
+  ok('local image kept', r.body.includes('/uploads/ok.jpg'));
+  await alice.page('/edit');
+  await alice.post('/edit', profileForm);
+
+  r = await alice.get('/robots.txt');
+  ok('robots.txt disallows everything', r.status === 200 && r.body.includes('Disallow: /'));
 
   // ---------------------------------------------------------------- design
   section('Design, wallpaper & custom CSS');
@@ -683,7 +733,8 @@ function wav() {
   ok('CSP blocks framing', csp.includes("frame-ancestors 'none'"));
   ok('CSP blocks plugins and base injection', csp.includes("object-src 'none'") && csp.includes("base-uri 'self'"));
   ok('CSP pins form submissions to this origin', csp.includes("form-action 'self'"));
-  ok('CSP still allows hotlinked images', csp.includes('img-src') && csp.includes('https:'));
+  ok('CSP forbids remote images (tracking pixels)', csp.includes("img-src 'self' data:") && !/img-src[^;]*https:/.test(csp));
+  ok('CSP forbids remote media', csp.includes("media-src 'self'") && !/media-src[^;]*https:/.test(csp));
   ok('clickjacking header set', r.headers.get('x-frame-options') === 'DENY');
   ok('referrer policy set', r.headers.get('referrer-policy') === 'same-origin');
 

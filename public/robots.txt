@@ -1,0 +1,4 @@
+# Nothing here is public. Every page requires a session, and uploads 404
+# without one. This file exists so there is no ambiguity about intent.
+User-agent: *
+Disallow: /

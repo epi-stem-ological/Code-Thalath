@@ -29,8 +29,8 @@ app.use(cookieParser());
 const PUBLIC_UPLOADS = process.env.PUBLIC_UPLOADS === '1';
 const SITE_CSP = [
   "default-src 'self'",
-  "img-src 'self' https: data:",      // members can hotlink images and wallpapers
-  "media-src 'self' https:",          // …and profile songs
+  "img-src 'self' data:",
+  "media-src 'self'",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline'",
   "connect-src 'self'",

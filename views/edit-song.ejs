@@ -26,16 +26,6 @@
             <div class="hint">MP3, M4A, OGG, WAV, FLAC. Max 25&nbsp;MB. Uploading replaces whatever is set now.</div>
           </div>
 
-          <div class="field">
-            <label for="song_url">&hellip;or paste a direct audio link</label>
-            <input type="url" id="song_url" name="song_url"
-                   value="<%= /^https?:/i.test(profile.song_url) ? profile.song_url : '' %>"
-                   placeholder="https://example.com/song.mp3" style="width:100%">
-            <div class="hint">
-              Must be a direct link to an audio file. YouTube/Spotify page links will not play &mdash;
-              upload the file instead.
-            </div>
-          </div>
 
           <div class="field">
             <label class="inline">
@@ -58,7 +48,7 @@
     <div class="module">
       <div class="modhead">Preview</div>
       <div class="body">
-        <% const src = profile.song_url ? (/^https?:/i.test(profile.song_url) ? profile.song_url : '/uploads/' + profile.song_url) : ''; %>
+        <% const src = profile.song_url ? '/uploads/' + profile.song_url : ''; %>
         <% if (src) { %>
           <div class="ms-player" id="ms-player" data-src="<%= src %>" data-autoplay="0">
             <div class="np">▶ Now playing<span class="eq"><i></i><i></i><i></i></span></div>

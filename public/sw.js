@@ -1,8 +1,8 @@
 /* Thalath Space service worker — offline shell + push. */
-const CACHE = 'tspace-v3';
+const CACHE = 'tspace-v4';
 const SHELL = [
-  '/css/site.css?v=3',
-  '/js/app.js?v=3',
+  '/css/site.css?v=4',
+  '/js/app.js?v=4',
   '/img/nopic.svg',
   '/img/icon.svg',
   '/offline.html',
