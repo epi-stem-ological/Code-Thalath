@@ -51,11 +51,29 @@ Secrets are picked up by a *new* session, so start one after saving.
 
 ## What happens then
 
-One command, from the repository root:
+**Windows (PowerShell):**
+
+```powershell
+iwr https://fly.io/install.ps1 -useb | iex   # then reopen PowerShell
+fly auth login                                # opens a browser
+git clone -b claude/myspace-2005-webapp-8979ed https://github.com/epi-stem-ological/Code-Thalath
+cd Code-Thalath
+.\scripts\deploy-fly.ps1
+```
+
+**macOS / Linux:**
 
 ```bash
+curl -L https://fly.io/install.sh | sh
+fly auth login
+git clone -b claude/myspace-2005-webapp-8979ed https://github.com/epi-stem-ological/Code-Thalath
+cd Code-Thalath
 ./scripts/deploy-fly.sh
 ```
+
+`fly auth login` authenticates through the browser, so no API token is needed
+at all. If you are running this from CI or an agent instead, set `FLY_API_TOKEN`
+and the scripts will use that.
 
 It installs `flyctl` if missing, creates the app, creates the storage volume,
 builds the container, deploys it, pins it to a single machine, waits for the

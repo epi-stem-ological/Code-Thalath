@@ -171,8 +171,9 @@ No server to patch, no domain, no Cloudflare. Fly supplies an HTTPS hostname, wh
 is all the phone app and push notifications actually require. ~$3–6/month.
 Full walkthrough in **[docs/FLY.md](docs/FLY.md)**; once `FLY_API_TOKEN` is set:
 
-```bash
-./scripts/deploy-fly.sh      # also the command to ship an update
+```powershell
+.\scripts\deploy-fly.ps1     # Windows
+./scripts/deploy-fly.sh      # macOS / Linux  — either is also the update command
 ```
 
 Note the one hard constraint: all state is a single SQLite file on one volume, so
@@ -306,7 +307,8 @@ scripts/smoke.js       the test suite (npm test)
 scripts/make-icons.js  regenerates the PNG icons
 scripts/screenshot.js  drives a real browser and writes screenshots
 fly.toml               Fly.io deployment (one machine, one volume)
-scripts/deploy-fly.sh  one-command deploy / update
+scripts/deploy-fly.sh  one-command deploy / update (macOS, Linux)
+scripts/deploy-fly.ps1 the same, for Windows PowerShell
 docker-compose.yml     app + cloudflared, for the Tunnel deployment
 docs/FLY.md            the recommended path, start to finish
 docs/CLOUDFLARE.md     the own-domain, own-server alternative
