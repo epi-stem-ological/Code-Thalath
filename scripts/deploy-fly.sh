@@ -21,13 +21,6 @@ die()  { printf '\033[31m  ✗ %s\033[0m\n' "$*" >&2; exit 1; }
 # ---------------------------------------------------------------- preflight
 [ -f fly.toml ] || die "run this from the repository root (no fly.toml here)"
 
-if [ -z "${FLY_API_TOKEN:-}" ]; then
-  die "FLY_API_TOKEN is not set.
-    Add it in the cloud environment's settings (title bar -> environment -> Edit)
-    under Network secrets, named FLY_API_TOKEN, then start a new session.
-    Generate the token with: fly tokens create deploy --name thalath"
-fi
-
 if ! command -v flyctl >/dev/null 2>&1; then
   say "Installing flyctl"
   curl -fsSL https://fly.io/install.sh | sh
@@ -36,9 +29,18 @@ if ! command -v flyctl >/dev/null 2>&1; then
 fi
 command -v flyctl >/dev/null 2>&1 || die "flyctl still not on PATH after install"
 
-say "Checking the token works"
-flyctl auth whoami >/dev/null 2>&1 || die "FLY_API_TOKEN was rejected by Fly. Generate a fresh one."
-echo "  authenticated as $(flyctl auth whoami 2>/dev/null)"
+# Either form of credential is fine: FLY_API_TOKEN in the environment (for an
+# agent or CI) or an interactive `fly auth login` already done on this machine.
+say "Checking Fly credentials"
+if flyctl auth whoami >/dev/null 2>&1; then
+  echo "  authenticated as $(flyctl auth whoami 2>/dev/null)"
+elif [ -n "${FLY_API_TOKEN:-}" ]; then
+  die "FLY_API_TOKEN is set but Fly rejected it. Generate a fresh token, or run: fly auth login"
+else
+  die "Not logged in to Fly. Either:
+      fly auth login                 (opens a browser — simplest)
+    or set FLY_API_TOKEN in the environment before running this."
+fi
 
 # ---------------------------------------------------------------- the app
 if flyctl apps list --json 2>/dev/null | grep -q "\"Name\": *\"$APP\""; then
