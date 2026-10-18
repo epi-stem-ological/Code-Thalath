@@ -212,6 +212,28 @@
       </div>
       <% } %>
 
+      <% if (game) { %>
+      <div class="ms-sect">
+        <div class="ms-secthead"><%= game.title %><% if (game.author) { %> <span class="dim">by <%= game.author %></span><% } %></div>
+        <div class="in" style="padding:0">
+          <%# sandbox WITHOUT allow-same-origin: the frame gets an opaque origin,
+              so it cannot read cookies, touch this page, or act as the viewer.
+              Adding allow-same-origin here would undo all of that. %>
+          <iframe
+            src="/play/<%= game.slug %>/"
+            title="<%= game.title %>"
+            sandbox="allow-scripts allow-pointer-lock"
+            referrerpolicy="no-referrer"
+            loading="lazy"
+            style="display:block;width:100%;aspect-ratio:1/<%= game.ratio %>;border:0;background:var(--bg-sunk)"
+          ></iframe>
+        </div>
+        <% if (game.description) { %>
+          <div class="in dim" style="padding-top:10px"><%= game.description %></div>
+        <% } %>
+      </div>
+      <% } %>
+
       <!-- friend space: Top N -->
       <div class="ms-sect friendSpace">
         <div class="ms-secthead">

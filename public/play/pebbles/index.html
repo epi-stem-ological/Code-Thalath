@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pebbles</title>
+<style>
+  html,body { margin:0; height:100%; overflow:hidden; background:#e8e2d8;
+              font-family:system-ui,-apple-system,sans-serif; }
+  canvas { display:block; width:100%; height:100%; touch-action:none; cursor:crosshair; }
+  #hint { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+          color:#8a8075; font-size:15px; pointer-events:none; transition:opacity 1s; }
+  @media (prefers-color-scheme: dark) { html,body { background:#1b1813; } #hint { color:#6d6458; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hint">tap the water</div>
+<script>
+(function () {
+  var c = document.getElementById('c'), x = c.getContext('2d'), hint = document.getElementById('hint');
+  var dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  var rings = [], w = 0, h = 0, touched = false;
+
+  function size() {
+    var d = Math.min(devicePixelRatio || 1, 2);
+    w = c.clientWidth; h = c.clientHeight;
+    c.width = w * d; c.height = h * d; x.setTransform(d, 0, 0, d, 0, 0);
+  }
+  addEventListener('resize', size); size();
+
+  function drop(px, py) {
+    if (!touched) { touched = true; hint.style.opacity = 0; }
+    rings.push({ x: px, y: py, r: 0, life: 1, hue: 20 + Math.random() * 40 });
+    if (rings.length > 60) rings.shift();
+  }
+
+  c.addEventListener('pointerdown', function (e) {
+    var b = c.getBoundingClientRect();
+    drop(e.clientX - b.left, e.clientY - b.top);
+  });
+
+  (function loop() {
+    x.fillStyle = dark ? 'rgba(27,24,19,.14)' : 'rgba(232,226,216,.14)';
+    x.fillRect(0, 0, w, h);
+    for (var i = rings.length - 1; i >= 0; i--) {
+      var r = rings[i];
+      r.r += 1.1; r.life -= 0.006;
+      if (r.life <= 0) { rings.splice(i, 1); continue; }
+      x.beginPath();
+      x.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+      x.strokeStyle = 'hsla(' + r.hue + ',35%,' + (dark ? 62 : 42) + '%,' + (r.life * 0.5) + ')';
+      x.lineWidth = 1.4;
+      x.stroke();
+    }
+    requestAnimationFrame(loop);
+  })();
+
+  // idle ripples, so a profile left open stays gently alive
+  setInterval(function () {
+    if (rings.length < 3) drop(Math.random() * w, Math.random() * h);
+  }, 2600);
+})();
+</script>
+</body>
+</html>

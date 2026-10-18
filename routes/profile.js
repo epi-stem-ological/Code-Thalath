@@ -8,6 +8,7 @@ const { richHtml, lightHtml, plain, cssValue, cssUrl } = require('../lib/sanitiz
 const { profileCss } = require('../lib/profilecss');
 const { imageUpload, audioUpload, removeUpload } = require('../lib/upload');
 const { THEMES, CURSORS, FONTS, HERE_FOR } = require('../lib/themes');
+const games = require('../lib/games');
 const u = require('../lib/util');
 
 const router = express.Router();
@@ -124,6 +125,7 @@ router.get('/u/:username', requireLogin, (req, res, next) => {
       heroes: richHtml(profile.heroes),
     },
     headerHtml: richHtml(layout.custom_html_top),
+    game: games.get(layout.embed_slug),
     marquee: plain(layout.marquee_text, 300),
   });
 });
@@ -355,6 +357,7 @@ router.get('/edit/design', requireLogin, (req, res) => {
     THEMES,
     CURSORS,
     FONTS,
+    games: games.list(),
     preview: profileCss(layout),
   });
 });
@@ -398,7 +401,8 @@ router.post('/edit/design', requireLogin, imageUpload.single('wallpaper'), (req,
       table_bg = @table_bg, table_opacity = @table_opacity, border_color = @border_color,
       header_bg = @header_bg, header_text = @header_text, font_family = @font_family,
       font_size = @font_size, cursor_style = @cursor_style, custom_css = @custom_css,
-      custom_html_top = @custom_html_top, marquee_text = @marquee_text, contact_style = @contact_style
+      custom_html_top = @custom_html_top, marquee_text = @marquee_text, contact_style = @contact_style,
+      embed_slug = @embed_slug
     WHERE user_id = @user_id
   `).run({
     theme: THEMES[themeKey] ? themeKey : 'classic',
@@ -428,6 +432,8 @@ router.post('/edit/design', requireLogin, imageUpload.single('wallpaper'), (req,
     custom_html_top: richHtml(String(b.custom_html_top || '').slice(0, 20000)),
     marquee_text: plain(b.marquee_text, 300),
     contact_style: u.pick(b.contact_style, ['classic', 'compact', 'icons'], 'classic'),
+    // only a game that actually exists on disk
+    embed_slug: games.get(b.embed_slug) ? String(b.embed_slug) : '',
     user_id: req.user.id,
   });
 

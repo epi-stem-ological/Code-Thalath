@@ -457,6 +457,59 @@ function wav() {
   ok('own opacity kept when theme not applied',
     /rgba\(\d+,\d+,\d+,0?\.35\)/.test(r.body));
 
+  // ------------------------------------------------------------------ games
+  section('Profile games (sandboxed)');
+
+  r = await alice.get('/play/pebbles/');
+  ok('a game is served', r.status === 200 && r.body.includes('<canvas'));
+  const gcsp = r.headers.get('content-security-policy') || '';
+  ok('game cannot phone home', gcsp.includes("connect-src 'none'"), gcsp.slice(0, 80));
+  ok('game cannot be framed off-site', gcsp.includes("frame-ancestors 'self'"));
+  ok('game cannot submit forms anywhere', gcsp.includes("form-action 'none'"));
+
+  await alice.page('/edit/design');
+  r = await alice.postMultipart('/edit/design', {
+    theme: 'classic', embed_slug: 'pebbles',
+    bg_color: '#123456', text_color: '#abcdef', link_color: '#00ff00',
+    link_hover_color: '#ff0000', table_bg: '#ffffff', border_color: '#6699cc',
+    header_bg: '#ff9933', header_text: '#ffffff', table_opacity: '1',
+    font_family: 'Verdana, Arial, sans-serif', font_size: '11px',
+    bg_repeat: 'repeat', bg_attachment: 'fixed', bg_size: 'auto', bg_position: 'center top',
+    custom_css: '', custom_html_top: '', marquee_text: '', contact_style: 'classic',
+  }, {});
+  ok('a game can be chosen', r.status === 302);
+
+  r = await alice.page('/u/alice');
+  ok('game appears on the profile', r.body.includes('/play/pebbles/'));
+  const frame = /<iframe[\s\S]*?<\/iframe>/.exec(r.body);
+  ok('it is framed', !!frame);
+  if (frame) {
+    const f = frame[0];
+    ok('frame is sandboxed', /sandbox="[^"]*allow-scripts/.test(f));
+    // allow-same-origin alongside allow-scripts would let the frame reach
+    // cookies and the page around it, undoing the whole sandbox.
+    ok('frame is NOT given same-origin', !/allow-same-origin/.test(f), 'SANDBOX DEFEATED');
+    ok('frame sends no referrer', /referrerpolicy="no-referrer"/.test(f));
+  }
+  r = await alice.page('/home');
+  ok('site CSP permits only our own frames',
+     (r.headers.get('content-security-policy') || '').includes("frame-src 'self'"));
+
+  // an unknown slug must not be storable
+  await alice.page('/edit/design');
+  await alice.postMultipart('/edit/design', {
+    theme: 'classic', embed_slug: '../../etc/passwd',
+    bg_color: '#123456', text_color: '#abcdef', link_color: '#00ff00',
+    link_hover_color: '#ff0000', table_bg: '#ffffff', border_color: '#6699cc',
+    header_bg: '#ff9933', header_text: '#ffffff', table_opacity: '1',
+    font_family: 'Verdana, Arial, sans-serif', font_size: '11px',
+    bg_repeat: 'repeat', bg_attachment: 'fixed', bg_size: 'auto', bg_position: 'center top',
+    custom_css: '', custom_html_top: '', marquee_text: '', contact_style: 'classic',
+  }, {});
+  r = await alice.page('/u/alice');
+  ok('a bogus game slug is rejected', !r.body.includes('etc/passwd') && !r.body.includes('<iframe'),
+     'bad slug stored');
+
   // ---------------------------------------------------------------- friends
   section('Friends & Top N');
   await bob.page('/u/alice');

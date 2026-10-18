@@ -35,7 +35,9 @@ const SITE_CSP = [
   "script-src 'self' 'unsafe-inline'",
   "connect-src 'self'",
   "worker-src 'self'",
-  "frame-src 'none'",
+  // Only our own sandboxed game frames. Never a third-party origin: an
+  // embedded frame runs that site's code in front of every member who visits.
+  "frame-src 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
   "base-uri 'self'",
@@ -54,6 +56,33 @@ app.use((req, res, next) => {
 });
 
 app.get('/healthz', (req, res) => res.type('text/plain').send('ok'));
+
+/**
+ * Member-facing games. These are framed with sandbox="allow-scripts" and no
+ * allow-same-origin, so the frame already runs in an opaque origin and cannot
+ * reach cookies or the surrounding page. This policy is the second half: it
+ * stops a game making any request off this server, so it cannot report who
+ * played it or pull in code we have not seen.
+ */
+app.use('/play', express.static(path.join(__dirname, 'public', 'play'), {
+  maxAge: '1h',
+  index: 'index.html',
+  setHeaders: (res) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",  // games bundle their own
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      "media-src 'self' data: blob:",
+      "font-src 'self' data:",
+      "connect-src 'none'",        // no phoning home, no leaderboards elsewhere
+      "frame-ancestors 'self'",    // only our pages may embed it
+      "form-action 'none'",
+      "base-uri 'none'",
+    ].join('; '));
+  },
+}));
 
 // Static site assets carry no secrets and need no session lookup.
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));

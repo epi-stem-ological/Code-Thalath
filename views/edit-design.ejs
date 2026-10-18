@@ -152,6 +152,34 @@
   </fieldset>
 
   <fieldset>
+    <legend>Something to play with</legend>
+    <% if (!games.length) { %>
+      <p class="dim" style="margin-top:0">
+        Nothing available yet. Games live in the site's own code rather than being
+        uploaded, so they can be read before anyone runs them. See
+        <code>public/play/README.md</code> if you want to add one.
+      </p>
+    <% } else { %>
+      <div class="field">
+        <label for="embed_slug">Put a game on my profile</label>
+        <select id="embed_slug" name="embed_slug" style="width:100%">
+          <option value="">Nothing &mdash; just my page</option>
+          <% games.forEach(function (g) { %>
+            <option value="<%= g.slug %>" <%= layout.embed_slug === g.slug ? 'selected' : '' %>>
+              <%= g.title %><%= g.author ? ' - by ' + g.author : '' %>
+            </option>
+          <% }); %>
+        </select>
+        <div class="hint">
+          It appears on your profile for anyone who visits. Games run boxed off from
+          the rest of the site: they cannot see who is playing, cannot reach your
+          account, and cannot send anything anywhere.
+        </div>
+      </div>
+    <% } %>
+  </fieldset>
+
+  <fieldset>
     <legend>Custom CSS <span class="dim">(the real hack)</span></legend>
     <div class="field">
       <textarea id="custom_css" name="custom_css" rows="14" spellcheck="false"
