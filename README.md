@@ -320,6 +320,7 @@ scripts/deploy-fly.sh  one-command deploy / update (macOS, Linux)
 scripts/deploy-fly.ps1 the same, for Windows PowerShell
 docker-compose.yml     app + cloudflared, for the Tunnel deployment
 docs/FLY.md            the recommended path, start to finish
+docs/FOR-GAME-AUTHORS.md  hand this to anyone porting a game onto a profile
 docs/CLOUDFLARE.md     the own-domain, own-server alternative
 ```
 

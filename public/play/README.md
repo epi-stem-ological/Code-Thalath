@@ -1,5 +1,9 @@
 # Adding a game
 
+> Sending this to someone who wants to port a game across? Give them
+> **[docs/FOR-GAME-AUTHORS.md](../../docs/FOR-GAME-AUTHORS.md)** instead -- same rules,
+> written for them rather than for whoever maintains this.
+
 A game is a folder here with an `index.html` and a `game.json`:
 
 ```
