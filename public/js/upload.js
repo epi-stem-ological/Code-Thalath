@@ -99,8 +99,6 @@
     var titleEl  = form && form.querySelector('[name=song_title]');
     var artistEl = form && form.querySelector('[name=song_artist]');
 
-    input.classList.add('uploader-input');
-
     function say(html, cls) {
       if (!preview) return;
       preview.innerHTML = html;
@@ -153,6 +151,9 @@
     input.addEventListener('change', function () { handle(input.files); });
 
     if (drop) {
+      // Only now hide the native input: if anything above had thrown, the
+      // plain file field would still be sitting there, usable.
+      input.classList.add('uploader-input');
       drop.addEventListener('click', function (e) {
         if (e.target.closest('a')) return;
         input.click();
