@@ -8,7 +8,7 @@
 # would drop the live IM connections and stop push notifications arriving.
 
 app = "thalath-space"
-primary_region = "lhr"          # change to the region nearest your people
+primary_region = "ams"          # Amsterdam — change before the first deploy if your group is elsewhere
 
 [build]
   dockerfile = "Dockerfile"
