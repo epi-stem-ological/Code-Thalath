@@ -26,7 +26,8 @@ router.get('/', (req, res) => {
   const users = db.prepare(`
     SELECT u.*,
       (SELECT COUNT(*) FROM friendships f WHERE f.status='accepted' AND (f.requester_id=u.id OR f.addressee_id=u.id)) AS friends,
-      (SELECT COUNT(*) FROM photos p WHERE p.user_id = u.id) AS photos
+      (SELECT COUNT(*) FROM photos p WHERE p.user_id = u.id) AS photos,
+      (SELECT COUNT(*) FROM invites i WHERE i.created_by = u.id AND i.used_by IS NOT NULL) AS brought
     FROM users u ORDER BY u.created_at DESC
   `).all();
   const invites = db.prepare(`
@@ -110,6 +111,12 @@ router.post('/user/:id/password', (req, res) => {
   db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hashPassword(String(req.body.password)), req.params.id);
   db.prepare('DELETE FROM sessions WHERE user_id = ?').run(req.params.id);
   res.redirect('/admin?msg=' + encodeURIComponent('Password reset. They are signed out everywhere.'));
+});
+
+router.post('/user/:id/invites', (req, res) => {
+  const n = Math.max(0, Math.min(50, parseInt(req.body.invites_left, 10) || 0));
+  db.prepare('UPDATE users SET invites_left = ? WHERE id = ?').run(n, req.params.id);
+  res.redirect('/admin?msg=' + encodeURIComponent('Invitation allowance updated.'));
 });
 
 router.post('/user/:id/delete', (req, res) => {

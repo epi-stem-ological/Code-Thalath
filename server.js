@@ -87,6 +87,7 @@ app.use((req, res, next) => {
   res.locals.siteName = setting('site_name', process.env.SITE_NAME || 'Thalath Space');
   res.locals.tagline = setting('tagline', 'a place for friends');
   res.locals.path = req.path;
+  res.locals.host = req.get('host') || '';
   res.locals.query = req.query;
   res.locals.u = util;
   res.locals.themes = themes;
@@ -104,6 +105,7 @@ app.use(checkCsrf);
 // Routes ---------------------------------------------------------------------
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/home'));
+app.use('/', require('./routes/invite'));
 app.use('/', require('./routes/profile'));
 app.use('/', require('./routes/friends'));
 app.use('/mail', require('./routes/mail'));

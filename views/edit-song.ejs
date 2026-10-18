@@ -21,9 +21,23 @@
           </div>
 
           <div class="field">
-            <label for="songfile">Upload an audio file</label>
-            <input type="file" id="songfile" name="songfile" accept="audio/*">
-            <div class="hint">MP3, M4A, OGG, WAV, FLAC. Max 25&nbsp;MB. Uploading replaces whatever is set now.</div>
+            <label for="songfile">Choose a song</label>
+            <div class="uploader" data-kind="audio" data-max-mb="25">
+              <div class="up-drop" data-drop tabindex="0" role="button" aria-label="Choose an audio file">
+                <span class="up-icon">&#9834;</span>
+                <span class="up-call">Tap to pick a song</span>
+                <span class="up-sub">From your Files app, or drag one here. MP3, M4A, OGG, WAV or FLAC, up to 25&nbsp;MB.</span>
+              </div>
+              <input type="file" id="songfile" name="songfile" accept="audio/*">
+              <div class="uploader-preview" data-preview hidden></div>
+            </div>
+            <div class="up-cant">
+              <b>Songs in Apple Music or Spotify can't be used.</b> They're locked by
+              those apps and your phone won't hand them over &mdash; this isn't
+              something we can work around. What does work: anything saved in your
+              <b>Files</b> app, a voice memo, or a track you've downloaded as a file.
+              On Android, look in Downloads or Music.
+            </div>
           </div>
 
 

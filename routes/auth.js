@@ -130,6 +130,13 @@ router.get('/about', (req, res) => {
   res.render('about', { title: 'About', nav: '' });
 });
 
+router.get('/privacy', (req, res) => {
+  const { db, setting } = require('../lib/db');
+  const tomId = Number(setting('tom_id', 0));
+  const tom = tomId ? db.prepare('SELECT username, display_name FROM users WHERE id = ?').get(tomId) : null;
+  res.render('privacy', { title: 'Privacy', nav: '', tom });
+});
+
 router.get('/help', (req, res) => {
   res.render('help', { title: 'Help', nav: '' });
 });

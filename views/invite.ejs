@@ -1,0 +1,138 @@
+<%- include('partials/header') %>
+
+<% const fresh = query.new ? String(query.new) : ''; %>
+
+<% if (fresh) { %>
+<div class="module" style="border-color:var(--clay)">
+  <div class="modhead">Your invitation is ready</div>
+  <div class="body center">
+    <p class="dim" style="margin-top:0">Send this link to one person. It works once.</p>
+    <div style="font-family:var(--mono);font-size:19px;letter-spacing:.06em;
+                background:var(--clay-wash);color:var(--clay-deep);
+                padding:16px;border-radius:var(--radius);margin:14px 0;word-break:break-all"
+         id="invite-link"><%= 'https://' + (typeof host !== 'undefined' ? host : '') %>/register?code=<%= fresh %></div>
+    <button type="button" class="btn primary" id="copy-invite">Copy the link</button>
+    <div class="hint">Code: <b><%= fresh %></b> &mdash; they can type this instead if the link is awkward.</div>
+  </div>
+</div>
+<% } %>
+
+<div class="ms-cols">
+  <div class="ms-col-right">
+    <div class="module">
+      <div class="modhead">Invite someone you trust</div>
+      <div class="body">
+        <p style="margin-top:0">
+          Everyone here was vouched for by someone. There is no sign-up page, no
+          discovery, no way in except an invitation from a member.
+        </p>
+
+        <% if (isAdmin) { %>
+          <p class="dim">You're an admin, so your invitations are unlimited.</p>
+        <% } else if (left > 0) { %>
+          <p>You have <b><%= left %></b> invitation<%= left === 1 ? '' : 's' %> left.</p>
+        <% } else { %>
+          <div class="ms-flash err">
+            You've used all your invitations. Ask Tom if there's someone else who should be here.
+          </div>
+        <% } %>
+
+        <% if (isAdmin || left > 0) { %>
+        <form method="post" action="/invite">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <div class="field">
+            <label for="note">Who is this for?</label>
+            <input type="text" id="note" name="note" placeholder="Sam from work" style="width:100%">
+            <div class="hint">Just so you remember who you gave it to. Only you and Tom see this.</div>
+          </div>
+          <button class="btn primary">Create an invitation</button>
+        </form>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="modhead">
+        <span>Your invitations</span>
+        <% if (joined) { %><span class="dim"><%= joined %> joined</span><% } %>
+      </div>
+      <div class="body tight">
+        <% if (!invites.length) { %>
+          <div class="empty">You haven't invited anyone yet.</div>
+        <% } %>
+        <table class="grid">
+          <% invites.forEach(function (i) { %>
+            <tr>
+              <td style="font-family:var(--mono);font-size:13px"><%= i.code %></td>
+              <td class="dim"><%= i.note %></td>
+              <td>
+                <% if (i.used_by) { %>
+                  <a href="/u/<%= i.used_username %>"><%= i.used_name %></a> joined
+                  <span class="dim"><%= u.timeAgo(i.used_at) %></span>
+                <% } else { %>
+                  <span class="dim">not used yet</span>
+                <% } %>
+              </td>
+              <td class="right">
+                <% if (!i.used_by) { %>
+                  <button type="button" class="btn small" data-copy="/register?code=<%= i.code %>">copy link</button>
+                  <form method="post" action="/invite/<%= i.code %>/revoke" style="display:inline"
+                        data-confirm="Withdraw this invitation? It gives you the slot back.">
+                    <input type="hidden" name="_csrf" value="<%= csrf %>">
+                    <button class="btn small danger">withdraw</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="ms-col-left">
+    <div class="module">
+      <div class="modhead">What to tell them</div>
+      <div class="body">
+        <p class="dim" style="margin-top:0">Feel free to paste this:</p>
+        <div style="background:var(--surface-2);border:1px solid var(--line);
+                    border-radius:var(--radius-sm);padding:14px;font-size:14px" id="blurb">
+          I'm on a small private site a friend runs &mdash; no ads, no algorithm,
+          nobody can find it or join without an invite. It works like an app on your
+          phone. Here's my invitation, it only works once.
+        </div>
+        <button type="button" class="btn small mt6" data-copy-text="#blurb">Copy this text</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  function flash(btn, word) {
+    var old = btn.textContent; btn.textContent = word;
+    setTimeout(function () { btn.textContent = old; }, 1600);
+  }
+  var main = document.getElementById('copy-invite');
+  if (main) main.addEventListener('click', function () {
+    navigator.clipboard.writeText(document.getElementById('invite-link').textContent.trim())
+      .then(function () { flash(main, 'Copied'); })
+      .catch(function () { flash(main, 'Press and hold to copy'); });
+  });
+  document.querySelectorAll('[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      navigator.clipboard.writeText(location.origin + b.getAttribute('data-copy'))
+        .then(function () { flash(b, 'copied'); }).catch(function () {});
+    });
+  });
+  document.querySelectorAll('[data-copy-text]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var el = document.querySelector(b.getAttribute('data-copy-text'));
+      navigator.clipboard.writeText(el.textContent.replace(/\s+/g, ' ').trim())
+        .then(function () { flash(b, 'Copied'); }).catch(function () {});
+    });
+  });
+})();
+</script>
+
+<%- include('partials/footer') %>

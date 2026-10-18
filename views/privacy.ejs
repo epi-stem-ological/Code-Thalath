@@ -1,0 +1,98 @@
+<%- include('partials/header') %>
+
+<div style="max-width:720px;margin:0 auto">
+
+  <div class="module">
+    <h2>What happens to what you put here</h2>
+    <div class="body">
+      <p style="margin-top:0">
+        This page is meant to be accurate rather than reassuring. Where something
+        is not protected, it says so.
+      </p>
+    </div>
+  </div>
+
+  <div class="module">
+    <div class="modhead">Your photos</div>
+    <div class="body">
+      <p style="margin-top:0"><b>Nothing here is reachable from the open internet.</b>
+      There is no sign-up page and no way to find this site. Every page requires a
+      login, and photo files return "not found" to anyone without one. Search
+      engines and scrapers never see it, because they cannot get past the door.</p>
+
+      <p><b>Location data is removed before your photo is stored.</b> A picture
+      taken on a phone normally carries GPS coordinates accurate to a few metres,
+      your device model, and the exact time. Upload a photo taken at home and that
+      file would otherwise tell people where you live. We strip all of it the
+      moment the file arrives &mdash; the picture is kept, everything hidden
+      inside it is discarded.</p>
+
+      <p><b>No third party ever sees anything.</b> There are no adverts, no
+      analytics, no tracking scripts, no fonts or images loaded from other
+      companies' servers. Nobody can embed an image from elsewhere, so no outside
+      site can learn that you viewed a page. Your pictures are not used to train
+      anything, sold, or shared, because they never leave this server.</p>
+
+      <p class="dim"><b>What we cannot do:</b> stop another member taking a
+      screenshot. Once a person can see a picture, they can keep it. No app has
+      ever solved this, and anything that claims to is pretending. The real
+      protection is that everyone here was invited by someone who vouched for
+      them &mdash; so invite accordingly.</p>
+    </div>
+  </div>
+
+  <div class="module">
+    <div class="modhead">Your messages</div>
+    <div class="body">
+      <p style="margin-top:0">Messages and chats are private between the people in
+      them. No other member can read them.</p>
+      <p><b>They are not end-to-end encrypted.</b> They are stored on the server as
+      ordinary text, which means whoever administers this site
+      <% if (typeof tom !== 'undefined' && tom) { %>(<a href="/u/<%= tom.username %>"><%= tom.display_name %></a>)<% } %>
+      is technically able to read them. They have no reason to and would have to
+      go out of their way, but you should know it is possible rather than assume
+      otherwise. If that matters for a particular conversation, have it somewhere
+      built for that.</p>
+    </div>
+  </div>
+
+  <div class="module">
+    <div class="modhead">Where it all lives</div>
+    <div class="body">
+      <p style="margin-top:0">One server, rented from a hosting company, with the
+      disk encrypted. Everything &mdash; accounts, messages, photos, songs &mdash;
+      sits in a single file and a single folder on that disk. No other company is
+      involved and nothing is copied anywhere else, except backups the
+      administrator keeps so a hardware failure doesn't erase everyone's history.</p>
+      <p>Connections are encrypted in transit. Passwords are stored scrambled in a
+      way that cannot be reversed, so even someone holding the database cannot
+      read them.</p>
+    </div>
+  </div>
+
+  <div class="module">
+    <div class="modhead">Leaving</div>
+    <div class="body">
+      <p style="margin-top:0">You can delete your account yourself at any time from
+      <a href="/settings">Settings</a>. It removes your profile, photos, posts,
+      comments and messages. Two honest caveats: anything another member already
+      saved or screenshotted is beyond our reach, and backups taken before you left
+      will still contain your data until they age out.</p>
+    </div>
+  </div>
+
+  <div class="module">
+    <div class="modhead">In one line</div>
+    <div class="body">
+      <p style="margin-top:0;font-size:17px;font-family:var(--serif)">
+        Nobody outside can get in. Nothing is sold, scraped or used to train
+        anything. Your photos carry no hidden location. The people who can see
+        your things are the people you can see &mdash; and the person running the
+        server.
+      </p>
+      <p class="dim">Questions about any of this are fair game. Ask.</p>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

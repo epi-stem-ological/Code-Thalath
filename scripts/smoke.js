@@ -514,6 +514,74 @@ function wav() {
   r = await alice.page('/notifications');
   ok('comment notification delivered', r.body.includes('left you a comment'));
 
+  // -------------------------------------------------------- member invites
+  section('Member invitations');
+
+  r = await bob.page('/invite');
+  ok('members can reach the invite page', r.status === 200 && r.body.includes('Invite someone'));
+  ok('shows a remaining allowance', /You have <b>\d+<\/b> invitation/.test(r.body), 'no allowance shown');
+
+  await bob.page('/invite');
+  r = await bob.post('/invite', { note: 'my cousin' });
+  ok('member can create an invitation', r.status === 302 && r.location.includes('new='), r.location);
+  const memberCode = decodeURIComponent((r.location.split('new=')[1] || '').split('&')[0]);
+  ok('code looks right', /^[A-Z2-9]{5}-[A-Z2-9]{5}$/.test(memberCode), memberCode);
+
+  r = await bob.page('/invite');
+  ok('the new code is listed', r.body.includes(memberCode));
+  ok('allowance went down', r.body.includes('<b>2</b> invitation'), 'quota not decremented');
+
+  // a code made by a member must actually work
+  const cousin = new Client('cousin');
+  await cousin.page('/register');
+  r = await cousin.post('/register', {
+    code: memberCode, username: 'cousin', display_name: 'The Cousin',
+    password: 'hunter2hunter2', confirm: 'hunter2hunter2',
+  });
+  ok("a member's invite creates an account", r.status === 302 && r.location.startsWith('/edit'), r.location);
+
+  // the real scenario: the link gets forwarded and a second person tries it
+  const gatecrasher = new Client('gatecrasher');
+  await gatecrasher.page('/register');
+  r = await gatecrasher.post('/register', {
+    code: memberCode, username: 'gatecrasher', display_name: 'Nope',
+    password: 'hunter2hunter2', confirm: 'hunter2hunter2',
+  });
+  ok('a forwarded invite cannot be reused', r.status === 400 && r.body.includes('not valid'),
+     `got ${r.status}`);
+
+  r = await bob.page('/invite');
+  ok('invite page shows who joined', r.body.includes('The Cousin'));
+
+  // quota is a real limit
+  for (let i = 0; i < 2; i++) { await bob.page('/invite'); await bob.post('/invite', { note: 'x' }); }
+  await bob.page('/invite');
+  r = await bob.post('/invite', { note: 'one too many' });
+  ok('allowance is enforced', r.status === 302 && r.location.includes('err='), r.location);
+
+  // withdrawing an unused code returns the slot
+  const spare = (await bob.page('/invite')).body.match(/\/invite\/([A-Z2-9-]+)\/revoke/);
+  ok('an unused code can be found to revoke', !!spare);
+  if (spare) {
+    await bob.page('/invite');
+    r = await bob.post(`/invite/${spare[1]}/revoke`);
+    ok('invitation withdrawn', r.status === 302 && r.location.includes('msg='));
+    r = await bob.page('/invite');
+    ok('slot returned to the member', r.body.includes('<b>1</b> invitation'), 'quota not refunded');
+  }
+
+  r = await alice.post(`/invite/${memberCode}/revoke`);
+  ok("cannot revoke someone else's used code", r.status === 302 && r.location.includes('err='));
+
+  // ------------------------------------------------------------ privacy page
+  section('Privacy page');
+  r = await alice.page('/privacy');
+  ok('privacy page renders', r.status === 200);
+  ok('states the admin can read messages', /not end-to-end encrypted/i.test(r.body), 'omits the honest caveat');
+  ok('states screenshots cannot be stopped', /screenshot/i.test(r.body));
+  ok('states location data is stripped', /location data is removed/i.test(r.body.replace(/<[^>]+>/g, '')));
+  ok('linked from the footer', (await alice.page('/home')).body.includes('/privacy'));
+
   // ---------------------------------------------------------------- mail
   section('Mail');
   await alice.page('/mail/compose');

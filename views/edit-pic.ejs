@@ -23,8 +23,15 @@
       <div class="body">
         <form method="post" action="/edit/pic" enctype="multipart/form-data">
           <input type="hidden" name="_csrf" value="<%= csrf %>">
-          <input type="file" name="avatar" accept="image/*" required>
-          <div class="hint">JPG, PNG, GIF (animated is fine), WebP. Max 12&nbsp;MB.</div>
+          <div class="uploader" data-kind="image" data-max-mb="12">
+            <div class="up-drop" data-drop tabindex="0" role="button" aria-label="Choose a picture">
+              <span class="up-icon">&#128100;</span>
+              <span class="up-call">Tap to pick a photo</span>
+              <span class="up-sub">JPG, PNG, animated GIF or WebP, up to 12&nbsp;MB. Location data is removed.</span>
+            </div>
+            <input type="file" name="avatar" accept="image/*" required>
+            <div class="uploader-preview" data-preview hidden></div>
+          </div>
           <button type="submit" class="btn primary mt6">Upload &amp; Set as Default</button>
         </form>
       </div>

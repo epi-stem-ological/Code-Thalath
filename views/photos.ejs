@@ -6,7 +6,15 @@
   <div class="body">
     <form method="post" action="/photos/upload" enctype="multipart/form-data">
       <input type="hidden" name="_csrf" value="<%= csrf %>">
-      <input type="file" name="photos" accept="image/*" multiple required>
+      <div class="uploader" data-kind="image" data-max-mb="12">
+        <div class="up-drop" data-drop tabindex="0" role="button" aria-label="Choose pictures">
+          <span class="up-icon">&#128247;</span>
+          <span class="up-call">Tap to add pictures</span>
+          <span class="up-sub">Up to 12 at once. Location data is stripped out before anything is saved.</span>
+        </div>
+        <input type="file" name="photos" accept="image/*" multiple required>
+        <div class="uploader-preview" data-preview hidden></div>
+      </div>
       <input type="text" name="caption" placeholder="Caption (optional)" style="margin-top:4px;width:100%">
       <% if (albums.length) { %>
         <select name="album_id" style="margin-top:4px;width:100%">

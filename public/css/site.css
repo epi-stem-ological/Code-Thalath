@@ -743,3 +743,58 @@ table.details td.k { color: var(--ink-faint); width: 44%; font-size: 13px; }
   }
   html { scroll-behavior: auto; }
 }
+
+/* ---- uploader ------------------------------------------------------------ */
+
+.uploader { margin-bottom: 8px; }
+.uploader-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+.up-drop {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; text-align: center;
+  padding: 30px 20px;
+  border: 2px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: border-color var(--t), background var(--t);
+  min-height: 132px;           /* a target you can hit with a thumb */
+}
+.up-drop:hover, .up-drop:focus-visible, .up-drop.over {
+  border-color: var(--clay);
+  background: var(--clay-wash);
+}
+.up-drop .up-icon { font-size: 30px; line-height: 1; opacity: .75; }
+.up-drop .up-call { font-weight: 600; font-size: 16px; color: var(--ink); }
+.up-drop .up-sub { font-size: 13px; color: var(--ink-faint); max-width: 34ch; line-height: 1.5; }
+
+.uploader-preview {
+  margin-top: 12px; padding: 14px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface);
+}
+.uploader-preview.bad { border-color: var(--rose); background: var(--rose-wash); }
+.uploader-preview audio { width: 100%; margin-top: 10px; }
+.uploader-preview .up-thumb {
+  width: 100%; max-height: 220px; object-fit: contain;
+  border-radius: var(--radius-sm); background: var(--bg-sunk); margin-bottom: 10px;
+}
+.uploader-preview .up-name { font-weight: 600; word-break: break-all; }
+.uploader-preview .up-meta { font-size: 13px; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.uploader-preview .up-ok { font-size: 13px; color: var(--sage); margin-top: 8px; }
+
+.up-progress {
+  margin-top: 12px; height: 26px; position: relative;
+  background: var(--bg-sunk); border-radius: var(--radius-pill); overflow: hidden;
+}
+.up-progress > i { display: block; height: 100%; width: 0; background: var(--clay); transition: width .2s var(--ease); }
+.up-progress > span {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums;
+}
+
+.up-cant {
+  margin-top: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.55;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-left: 3px solid var(--gold); border-radius: var(--radius-sm); color: var(--ink-soft);
+}

@@ -273,7 +273,14 @@ location / {
 
 ## Backups
 
-Everything that matters is two paths:
+On Fly, one command pulls everything onto your machine:
+
+```powershell
+.\scripts\backup-fly.ps1     # Windows
+./scripts/backup-fly.sh      # macOS / Linux
+```
+
+Running it elsewhere, everything that matters is two paths:
 
 ```bash
 sqlite3 data/thalath.db ".backup '/backup/thalath-$(date +%F).db'"
@@ -303,6 +310,8 @@ views/                 EJS templates; partials/header + partials/footer wrap eac
 public/css/site.css    the chrome — user CSS can never override it
 public/js/app.js       music player, drag-sort, PWA registration, push opt-in
 public/sw.js           service worker: offline shell, push, notification clicks
+scripts/snapshot.js    consistent DB snapshot, run inside the container
+scripts/backup-fly.sh  pull database + uploads off Fly (.ps1 for Windows)
 scripts/smoke.js       the test suite (npm test)
 scripts/make-icons.js  regenerates the PNG icons
 scripts/screenshot.js  drives a real browser and writes screenshots

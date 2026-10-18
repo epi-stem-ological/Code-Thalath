@@ -104,6 +104,21 @@ the count afterwards.
 **Never run `fly scale count 2`.** If Fly ever suggests scaling out, the answer is
 a bigger machine, not more of them.
 
+### Backups: do this now, not later
+
+```powershell
+.\scripts\backup-fly.ps1          # Windows
+./scripts/backup-fly.sh           # macOS / Linux
+```
+
+Takes a consistent database snapshot on the server (safe while the app is
+serving), packs it with every uploaded photo and song, downloads it here, and
+tidies the server up after itself. Keeps the last 12 and prunes older ones.
+
+Run it monthly, and before any big change. Then keep at least one copy
+somewhere else again -- another drive, or encrypted cloud storage. A backup
+that only exists on your laptop is one spilled coffee from not existing.
+
 ### The volume is the whole thing
 
 `thalath_data` holds the database *and* every uploaded photo and song. The app is

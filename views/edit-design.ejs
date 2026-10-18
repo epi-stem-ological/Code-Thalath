@@ -32,8 +32,16 @@
       <label class="inline"><input type="checkbox" name="remove_wallpaper" value="1"> remove current wallpaper</label>
     <% } %>
     <div class="field">
-      <label for="wallpaper">Upload an image</label>
-      <input type="file" id="wallpaper" name="wallpaper" accept="image/*">
+      <label for="wallpaper">Wallpaper</label>
+      <div class="uploader" data-kind="image" data-max-mb="12">
+        <div class="up-drop" data-drop tabindex="0" role="button" aria-label="Choose a wallpaper">
+          <span class="up-icon">&#127748;</span>
+          <span class="up-call">Tap to pick a wallpaper</span>
+          <span class="up-sub">It sits behind your whole page. Tile a small one, or use a big photo.</span>
+        </div>
+        <input type="file" id="wallpaper" name="wallpaper" accept="image/*">
+        <div class="uploader-preview" data-preview hidden></div>
+      </div>
     </div>
     <div class="formgrid">
       <div class="field">
